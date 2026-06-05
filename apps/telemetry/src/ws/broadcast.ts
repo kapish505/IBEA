@@ -15,7 +15,7 @@ export const redisPub = new RedisClient(config.REDIS_URL, {
 export const redisSub = new RedisClient(config.REDIS_URL, {
   lazyConnect: false,
   maxRetriesPerRequest: null,
-  enableReadyCheck: true,
+  enableReadyCheck: false,
   retryStrategy: (times: number) => Math.min(times * 500, 10_000),
 });
 
