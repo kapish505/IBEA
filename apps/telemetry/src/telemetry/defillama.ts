@@ -1,273 +1,141 @@
 import { config } from '../config.js';
+import { publishArchLog } from './relayer.js';
 import { redisPub } from '../ws/broadcast.js';
-import { query } from '../db/client.js';
 
-// ─── Exponential backoff fetch ────────────────────────────────────────────────
-async function fetchWithBackoff(
-  url: string,
-  init?: RequestInit,
-  maxRetries = 5,
-): Promise<Response> {
-  let delay = 1_000;
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const response = await fetch(url, init);
-      if (response.ok) return response;
-      // For 429 or 5xx, retry
-      if (response.status === 429 || response.status >= 500) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      // 4xx client errors are not retried
-      return response;
-    } catch (err) {
-      if (attempt === maxRetries) throw err;
-      console.warn(
-        `[defillama] Fetch attempt ${attempt}/${maxRetries} failed, retrying in ${delay}ms:`,
-        (err as Error).message,
-      );
-      await new Promise((r) => setTimeout(r, delay));
-      delay = Math.min(delay * 2, 60_000);
-    }
-  }
-  throw new Error('[defillama] All retries exhausted');
+interface DefiLlamaTvlEntry {
+  date: number;
+  totalLiquidityUSD: number;
 }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-interface DefiLlamaProtocol {
-  id: string;
-  name: string;
-  slug: string;
-  tvl: number | null;
-  chains: string[];
-  category: string;
-  change_1d?: number | null;
-  change_7d?: number | null;
-}
+// Store last known TVL for deviation tracking across polls
+let lastKnownTvl: number | null = null;
 
-interface TvlSnapshot {
-  tvl: number;
-  recordedAt: number;
-}
-
-// ─── State ────────────────────────────────────────────────────────────────────
-const tvlSnapshots = new Map<string, TvlSnapshot>();
-
-// ─── Fetch all protocols and watch for TVL Δ ─────────────────────────────────
-async function checkAllProtocols(): Promise<void> {
-  const resp = await fetchWithBackoff(
-    `${config.DEFILLAMA_API_URL}/protocols`,
-    { headers: { 'Accept': 'application/json' } },
-  );
-  if (!resp.ok) {
-    console.warn(`[defillama] /protocols returned HTTP ${resp.status}`);
-    return;
-  }
-
-  const protocols: DefiLlamaProtocol[] = await resp.json() as DefiLlamaProtocol[];
-
-  for (const proto of protocols) {
-    if (proto.tvl === null || proto.tvl === undefined) continue;
-
-    const slug = proto.slug;
-    const currentTvl = proto.tvl;
-    const prev = tvlSnapshots.get(slug);
-
-    if (prev) {
-      const changePct = Math.abs((currentTvl - prev.tvl) / Math.max(prev.tvl, 1)) * 100;
-      if (changePct >= config.TVL_CHANGE_THRESHOLD_PCT) {
-        const direction = currentTvl < prev.tvl ? 'DROP' : 'RISE';
-        const severity = Math.min(
-          10000,
-          Math.round((changePct / 100) * 10000),
-        );
-
-        console.log(
-          `[defillama] TVL ${direction} for ${proto.name}: ` +
-          `${prev.tvl.toFixed(0)} → ${currentTvl.toFixed(0)} (${changePct.toFixed(2)}%)`,
-        );
-
-        // Persist to DB
-        try {
-          await query(
-            `INSERT INTO telemetry_signals
-               (source, signal_type, severity, confidence, protocol, details)
-             VALUES ($1,$2,$3,$4,$5,$6)`,
-            [
-              'defillama',
-              `TVL_${direction}`,
-              severity,
-              8000,
-              proto.name,
-              JSON.stringify({
-                previousTvl: prev.tvl,
-                currentTvl,
-                changePct: changePct.toFixed(4),
-                direction,
-                chains: proto.chains,
-                category: proto.category,
-                change_1d: proto.change_1d,
-                change_7d: proto.change_7d,
-              }),
-            ],
-          );
-        } catch (err) {
-          console.error('[defillama] DB write error:', err);
-        }
-
-        // Publish to Redis for WS broadcast
-        try {
-          await redisPub.publish(
-            'ibea:events',
-            JSON.stringify({
-              type: 'THREAT_UPDATE',
-              payload: {
-                source: 'defillama',
-                protocol: proto.name,
-                slug,
-                direction,
-                previousTvl: prev.tvl,
-                currentTvl,
-                changePct: changePct.toFixed(4),
-                severity,
-              },
-              ts: Date.now(),
-            }),
-          );
-        } catch (err) {
-          console.error('[defillama] Redis publish error:', err);
-        }
-      }
-    }
-
-    tvlSnapshots.set(slug, { tvl: currentTvl, recordedAt: Date.now() });
-  }
-}
-
-// ─── Specific protocol TVL polling ───────────────────────────────────────────
-async function checkSpecificProtocol(slug: string): Promise<void> {
-  const resp = await fetchWithBackoff(
-    `${config.DEFILLAMA_API_URL}/tvl/${slug}`,
-    { headers: { 'Accept': 'application/json' } },
-  );
-  if (!resp.ok) {
-    console.warn(`[defillama] /tvl/${slug} returned HTTP ${resp.status}`);
-    return;
-  }
-
-  const tvl: number = await resp.json() as number;
-  const prev = tvlSnapshots.get(slug);
-
-  if (prev) {
-    const changePct = Math.abs((tvl - prev.tvl) / Math.max(prev.tvl, 1)) * 100;
-    if (changePct >= config.TVL_CHANGE_THRESHOLD_PCT) {
-      const direction = tvl < prev.tvl ? 'DROP' : 'RISE';
-      const severity = Math.min(10000, Math.round((changePct / 100) * 10000));
-
-      console.log(
-        `[defillama] Specific protocol TVL ${direction} for ${slug}: ` +
-        `${prev.tvl.toFixed(0)} → ${tvl.toFixed(0)} (${changePct.toFixed(2)}%)`,
-      );
-
-      try {
-        await query(
-          `INSERT INTO telemetry_signals
-             (source, signal_type, severity, confidence, protocol, details)
-           VALUES ($1,$2,$3,$4,$5,$6)`,
-          [
-            'defillama',
-            `TVL_${direction}`,
-            severity,
-            9000,
-            slug,
-            JSON.stringify({ previousTvl: prev.tvl, currentTvl: tvl, changePct }),
-          ],
-        );
-      } catch (err) {
-        console.error('[defillama] DB write error (specific):', err);
-      }
-
-      try {
-        await redisPub.publish(
-          'ibea:events',
-          JSON.stringify({
-            type: 'THREAT_UPDATE',
-            payload: {
-              source: 'defillama',
-              protocol: slug,
-              direction,
-              previousTvl: prev.tvl,
-              currentTvl: tvl,
-              changePct,
-              severity,
-            },
-            ts: Date.now(),
-          }),
-        );
-      } catch (err) {
-        console.error('[defillama] Redis publish error:', err);
-      }
-    }
-  }
-
-  tvlSnapshots.set(slug, { tvl, recordedAt: Date.now() });
-}
-
-// ─── Watcher lifecycle ────────────────────────────────────────────────────────
-export async function startDefiLlamaWatcher(): Promise<() => void> {
-  console.log('[defillama] Starting TVL watcher…');
-
-  // Perform initial snapshot
+export async function pollDefillama(protocolName: string): Promise<void> {
   try {
-    await checkAllProtocols();
-    if (config.DEFILLAMA_PROTOCOL_SLUG) {
-      await checkSpecificProtocol(config.DEFILLAMA_PROTOCOL_SLUG);
+    const apiUrl = `https://api.llama.fi/protocol/${protocolName.toLowerCase()}`;
+    await publishArchLog(`[DefiLlama] Fetching TVL for ${protocolName}...`, 'PENDING', 'LAYER_0');
+
+    const res = await fetch(apiUrl);
+    if (!res.ok) {
+      if (res.status === 400) {
+        await publishArchLog(`[DefiLlama] Protocol not tracked yet. Baseline TVL stable.`, 'SUCCESS', 'LAYER_0');
+        return;
+      }
+      await publishArchLog(`[DefiLlama] API returned ${res.status}: ${res.statusText}`, 'FAIL', 'LAYER_0');
+      return;
     }
+
+    const data = await res.json() as { tvl?: DefiLlamaTvlEntry[]; currentChainTvls?: Record<string, number> };
+    const tvlHistory = data.tvl ?? [];
+
+    if (tvlHistory.length < 2) {
+      await publishArchLog(`[DefiLlama] Insufficient TVL history for ${protocolName}`, 'FAIL', 'LAYER_0');
+      return;
+    }
+
+    // Get current TVL (last entry) and compare with historical
+    const currentTvl = tvlHistory[tvlHistory.length - 1]!.totalLiquidityUSD;
+    
+    // Find TVL from ~1 hour ago (or closest available)
+    const oneHourAgo = Math.floor(Date.now() / 1000) - 3600;
+    let historicalTvl = tvlHistory[tvlHistory.length - 2]!.totalLiquidityUSD;
+    for (let i = tvlHistory.length - 1; i >= 0; i--) {
+      if (tvlHistory[i]!.date <= oneHourAgo) {
+        historicalTvl = tvlHistory[i]!.totalLiquidityUSD;
+        break;
+      }
+    }
+
+    // Also compare with last poll's value for rapid change detection
+    const baselineTvl = lastKnownTvl ?? historicalTvl;
+    lastKnownTvl = currentTvl;
+
+    // Calculate deviation percentage
+    const deviationPct = baselineTvl > 0
+      ? ((baselineTvl - currentTvl) / baselineTvl) * 100
+      : 0;
+
+    // Convert to severity basis points:
+    // 5% drop  = 2500bp (noticeable)
+    // 10% drop = 5000bp (concerning)
+    // 25% drop = 7500bp (severe)
+    // 50%+ drop = 10000bp (catastrophic)
+    let severity: number;
+    if (deviationPct <= 0) {
+      severity = 0; // TVL increased or stayed flat — no threat
+    } else if (deviationPct < 5) {
+      severity = Math.round(deviationPct * 500); // 0-2500
+    } else if (deviationPct < 25) {
+      severity = Math.round(2500 + ((deviationPct - 5) / 20) * 5000); // 2500-7500
+    } else {
+      severity = Math.min(Math.round(7500 + ((deviationPct - 25) / 25) * 2500), 10000); // 7500-10000
+    }
+
+    const formattedTvl = (currentTvl / 1e6).toFixed(2);
+    const formattedDev = deviationPct.toFixed(2);
+
+    if (severity > 0) {
+      await publishArchLog(
+        `[DefiLlama] ${protocolName} TVL: $${formattedTvl}M | Δ ${formattedDev}% drop | Severity: ${severity}bp`,
+        severity >= 5000 ? 'FAIL' : 'SUCCESS',
+        'LAYER_0'
+      );
+
+      // Emit THREAT_UPDATE to the M-of-N consensus gate
+      await redisPub.publish('ibea:events', JSON.stringify({
+        type: 'THREAT_UPDATE',
+        payload: {
+          source: 'defillama',
+          severity,
+          direction: 'TVL_DROP',
+          protocol: protocolName,
+          currentTvl,
+          deviationPct: parseFloat(formattedDev),
+        },
+        ts: Date.now(),
+      }));
+    } else {
+      await publishArchLog(
+        `[DefiLlama] ${protocolName} TVL: $${formattedTvl}M | Stable (Δ ${formattedDev}%)`,
+        'SUCCESS',
+        'LAYER_0'
+      );
+    }
+
   } catch (err) {
-    console.error('[defillama] Initial snapshot failed:', err);
+    console.error(`[defillama] Error fetching for ${protocolName}:`, err);
+    await publishArchLog(`[DefiLlama] Poll failed: ${(err as Error).message}`, 'FAIL', 'LAYER_0');
   }
+}
+
+export async function startDefillamaWatcher(): Promise<() => void> {
+  const protocols = config.DEFILLAMA_PROTOCOL_SLUG.split(',').map((p: string) => p.trim()).filter(Boolean);
+
+  if (protocols.length === 0) {
+    console.warn('[defillama] ⚠️ No protocols configured — DefiLlama watcher disabled');
+    return () => {};
+  }
+
+  console.log(`[defillama] Starting DefiLlama Reflex Watcher for ${protocols.length} protocol(s)`);
 
   let stopped = false;
-  let allProtoTimer: ReturnType<typeof setTimeout> | null = null;
-  let specificTimer: ReturnType<typeof setTimeout> | null = null;
+  let timer: ReturnType<typeof setTimeout> | null = null;
 
-  async function allProtoLoop(): Promise<void> {
+  async function loop(): Promise<void> {
     if (stopped) return;
-    try {
-      await checkAllProtocols();
-    } catch (err) {
-      console.error('[defillama] Protocol poll error:', err);
+    for (const p of protocols) {
+      if (stopped) break;
+      await pollDefillama(p);
     }
     if (!stopped) {
-      allProtoTimer = setTimeout(() => void allProtoLoop(), config.DEFILLAMA_POLL_INTERVAL_MS);
+      timer = setTimeout(() => void loop(), config.DEFILLAMA_POLL_INTERVAL_MS);
     }
   }
 
-  async function specificLoop(): Promise<void> {
-    if (stopped || !config.DEFILLAMA_PROTOCOL_SLUG) return;
-    try {
-      await checkSpecificProtocol(config.DEFILLAMA_PROTOCOL_SLUG);
-    } catch (err) {
-      console.error('[defillama] Specific protocol poll error:', err);
-    }
-    if (!stopped) {
-      specificTimer = setTimeout(() => void specificLoop(), config.DEFILLAMA_POLL_INTERVAL_MS / 2);
-    }
-  }
-
-  // Start loops
-  allProtoTimer = setTimeout(() => void allProtoLoop(), config.DEFILLAMA_POLL_INTERVAL_MS);
-  specificTimer = setTimeout(() => void specificLoop(), config.DEFILLAMA_POLL_INTERVAL_MS / 2);
-
-  console.log('[defillama] ✅ TVL watcher started');
+  await loop();
 
   return () => {
     stopped = true;
-    if (allProtoTimer) clearTimeout(allProtoTimer);
-    if (specificTimer) clearTimeout(specificTimer);
-    console.log('[defillama] TVL watcher stopped');
+    if (timer) clearTimeout(timer);
   };
-}
-
-export function getCurrentTvlSnapshot(): Map<string, TvlSnapshot> {
-  return new Map(tvlSnapshots);
 }

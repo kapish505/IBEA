@@ -6,6 +6,7 @@ export function ArchitectureFlowTrace() {
 
   const getLayerColor = (layer: string) => {
     switch (layer) {
+      case 'LAYER_0': return 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10';
       case 'LAYER_1': return 'text-neutral-400 border-neutral-700 bg-neutral-900/50';
       case 'LAYER_2': return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
       case 'LAYER_3': return 'text-purple-400 border-purple-500/30 bg-purple-500/10';
@@ -16,6 +17,7 @@ export function ArchitectureFlowTrace() {
 
   const getLayerLabel = (layer: string) => {
     switch (layer) {
+      case 'LAYER_0': return 'REFLEX TELEMETRY';
       case 'LAYER_1': return 'JSON API AGENT';
       case 'LAYER_2': return 'LLM INFERENCE VALIDATOR';
       case 'LAYER_3': return 'ON-CHAIN ACTION EXECUTOR';
@@ -33,7 +35,7 @@ export function ArchitectureFlowTrace() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs">
+    <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-3 font-mono text-xs">
       <AnimatePresence initial={false}>
         {architectureLogs.map((log) => (
           <motion.div

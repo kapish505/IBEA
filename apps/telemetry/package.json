@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
+    "@ibea/keeper": "workspace:^",
+    "@ibea/lifi": "workspace:^",
     "dotenv": "^17.4.2",
     "hono": "^4.6.14",
     "ioredis": "^5.4.1",

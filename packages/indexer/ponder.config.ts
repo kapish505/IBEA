@@ -17,25 +17,25 @@ export default createConfig({
       abi: IBEACoreABI,
       network: "somniaShannon",
       address: (process.env.NEXT_PUBLIC_IBEA_CORE_ADDRESS || "0x0000000000000000000000000000000000000000") as `0x${string}`,
-      startBlock: 400671915,
+      startBlock: 401560491,
     },
     EscalationGate: {
       abi: EscalationGateABI,
       network: "somniaShannon",
       address: (process.env.NEXT_PUBLIC_ESCALATION_GATE_ADDRESS || "0x0000000000000000000000000000000000000000") as `0x${string}`,
-      startBlock: 400671915,
+      startBlock: 401560491,
     },
     ThreatVectorMatrix: {
       abi: ThreatVectorMatrixABI,
       network: "somniaShannon",
       address: (process.env.NEXT_PUBLIC_THREAT_VECTOR_MATRIX_ADDRESS || "0x0000000000000000000000000000000000000000") as `0x${string}`,
-      startBlock: 400671915,
+      startBlock: 401560491,
     },
     ODIGGuard: {
       abi: ODIGGuardABI,
       network: "somniaShannon",
       address: (process.env.NEXT_PUBLIC_ODIG_GUARD_ADDRESS || "0x0000000000000000000000000000000000000000") as `0x${string}`,
-      startBlock: 400671915,
+      startBlock: 401560491,
     }
   },
 });

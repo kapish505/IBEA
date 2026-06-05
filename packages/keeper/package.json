@@ -1,27 +1,9 @@
 {
   "name": "@ibea/keeper",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
-  },
+  "main": "src/index.ts",
   "dependencies": {
-    "@ibea/lifi": "workspace:^",
-    "@ibea/shared": "workspace:^",
-    "@lifi/sdk": "^3.4.1",
-    "ioredis": "^5.4.1",
-    "pg": "^8.13.1",
-    "tsx": "^4.19.2",
-    "viem": "^2.21.0",
-    "zod": "^3.23.8"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "@types/pg": "^8.11.10",
-    "typescript": "^5.6.0"
+    "viem": "^2.23.2"
   }
 }

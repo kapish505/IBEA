@@ -150,7 +150,7 @@ export function KeeperOrchestrationPanel() {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 min-h-0">
       {activeActions.length > 0 && (
         <div>
           <p className="text-label mb-2">Active</p>

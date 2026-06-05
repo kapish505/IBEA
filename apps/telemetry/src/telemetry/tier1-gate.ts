@@ -1,8 +1,9 @@
 import { config } from '../config.js';
 import { redisPub } from '../ws/broadcast.js';
 import { query } from '../db/client.js';
-import { startFortaWatcher } from './forta.js';
-import { startDefiLlamaWatcher } from './defillama.js';
+import { startDefillamaWatcher } from './defillama.js';
+import { triggerSemanticEnrichment } from './semantic.js';
+import { triggerPredictiveEnrichment } from './predictive.js';
 import {
   createPublicClient,
   http,
@@ -49,7 +50,7 @@ const ESCALATION_GATE_ABI = [
 
 // ─── M-of-N consensus state ───────────────────────────────────────────────────
 const CONSENSUS_WINDOW_MS = 5 * 60 * 1_000; // 5 minutes
-const M_OF_N_THRESHOLD = 2;
+const M_OF_N_THRESHOLD = 1;
 
 const recentSignals: ProviderSignal[] = [];
 
@@ -76,7 +77,16 @@ function countDistinctProviders(): Map<string, number> {
 async function evaluateConsensus(): Promise<void> {
   const providerMap = countDistinctProviders();
 
-  // Filter to providers that are reporting at meaningful severity (>= 3000 bp)
+  // Fast-Path Bypass Logic: If ADM_METRIC (DefiLlama) reports critical TVL crash (>= 8000)
+  // Skip M-of-N LLM consensus entirely and force emergency execution
+  const metricSeverity = providerMap.get('defillama') ?? 0;
+  if (metricSeverity >= 8000) {
+    console.log(`[tier1-gate] 🚨 FAST-PATH BYPASS ACTIVATED: DefiLlama severity ${metricSeverity} >= 8000. Skipping LLM Consensus.`);
+    await triggerEscalation(3, metricSeverity, 'defillama_fastpath');
+    return;
+  }
+
+  // Slow-Path Consensus: Filter to providers reporting at meaningful severity (>= 3000 bp)
   const activeProviders = [...providerMap.entries()].filter(
     ([, sev]) => sev >= 3000,
   );
@@ -92,7 +102,7 @@ async function evaluateConsensus(): Promise<void> {
 
   const providerNames = activeProviders.map(([p]) => p).join(', ');
   console.log(
-    `[tier1-gate] 🚨 M-of-N consensus reached: ${activeProviders.length}/${M_OF_N_THRESHOLD} providers ` +
+    `[tier1-gate] 🚨 SLOW-PATH M-of-N consensus reached: ${activeProviders.length}/${M_OF_N_THRESHOLD} providers ` +
     `(${providerNames}) avgSeverity=${avgSeverity}`,
   );
 
@@ -102,6 +112,10 @@ async function evaluateConsensus(): Promise<void> {
   else if (avgSeverity >= 5000) tier = 2;
   else tier = 1;
 
+  await triggerEscalation(tier, avgSeverity, providerNames);
+}
+
+async function triggerEscalation(tier: number, avgSeverity: number, providerNames: string): Promise<void> {
   // Persist escalation
   try {
     await query(
@@ -115,7 +129,7 @@ async function evaluateConsensus(): Promise<void> {
         tier,
         'consensus',
         avgSeverity,
-        JSON.stringify({ providers: providerNames, signalCount: activeProviders.length }),
+        JSON.stringify({ providers: providerNames }),
       ],
     );
   } catch (err) {
@@ -133,8 +147,6 @@ async function evaluateConsensus(): Promise<void> {
           tier,
           threatScore: avgSeverity,
           providers: providerNames,
-          activeProviderCount: activeProviders.length,
-          requiredProviderCount: M_OF_N_THRESHOLD,
         },
         ts: Date.now(),
       }),
@@ -180,6 +192,10 @@ async function evaluateConsensus(): Promise<void> {
 
   // Clear signals after triggering to avoid repeated escalations
   recentSignals.length = 0;
+
+  // Asynchronously dispatch Somnia Native Agents for contextual semantic and predictive enrichment
+  void triggerSemanticEnrichment();
+  void triggerPredictiveEnrichment();
 }
 
 // ─── Subscribe to Redis for signals from other services ───────────────────────
@@ -223,24 +239,22 @@ export async function startTier1Gate(): Promise<() => void> {
     }
   });
 
-  // Start the child watchers
-  const stopForta = await startFortaWatcher();
-  const stopDefiLlama = await startDefiLlamaWatcher();
+  // Start the child watcher
+  const stopDefillama = await startDefillamaWatcher();
 
   // Periodic consensus re-evaluation in case signals came in without triggering
   let stopped = false;
-  const evalTimer = setInterval(() => {
+  const timer = setInterval(() => {
     if (!stopped) void evaluateConsensus();
   }, 60_000);
 
-  console.log('[tier1-gate] ✅ Tier 1 gate active (M=2, N=3, window=5min)');
+  console.log('[tier1-gate] ✅ Tier 1 gate active (Fast-Path bypass enabled, Slow-Path M=1)');
 
-  return async () => {
+  return () => {
     stopped = true;
-    clearInterval(evalTimer);
-    stopForta();
-    stopDefiLlama();
-    await redisSub.unsubscribe('ibea:events');
+    if (timer) clearInterval(timer);
+    redisSub.unsubscribe('ibea:events');
+    stopDefillama();
     console.log('[tier1-gate] Stopped');
   };
 }

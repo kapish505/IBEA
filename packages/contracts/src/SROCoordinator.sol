@@ -3,12 +3,18 @@ pragma solidity ^0.8.24;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
+interface IAgentManager {
+    function createTask(
+        uint256 agentId,
+        string calldata taskData
+    ) external payable returns (uint256 taskId);
+}
+
 /// @title SROCoordinator
-/// @notice On-Chain Ingestion Hub orchestrating Somnia Native Agents.
+/// @notice On-Chain Ingestion Hub orchestrating Somnia Native Agents via the AgentManager.
 contract SROCoordinator is Ownable {
     // ─── Events ───────────────────────────────────────────────────────────────
 
-    // Matches the flowchart precisely
     event RiskEvent(
         uint8 indexed eventType,
         uint8 confidence,
@@ -17,84 +23,145 @@ contract SROCoordinator is Ownable {
         uint256 targetChainId
     );
 
-    event AgentRegistered(address indexed agent, string role);
-    
-    // For tracing
+    event AgentTaskCreated(uint256 indexed taskId, uint256 agentId, string workflow);
     event FastPathTriggered(uint256 metricDeviation);
     event SlowPathConsensusRequested(bytes32 evidenceHash);
 
     // ─── Storage ──────────────────────────────────────────────────────────────
 
-    // Authorized Somnia Native Agents
-    address public admMetricAgent; // JSON API Agent
-    address public admSemanticAgent; // LLM Parse + Inference
-    address public admPredictiveAgent; // Governance Scraper
+    IAgentManager public agentManager;
+
+    // Authorized Somnia Native Agent IDs
+    uint256 public jsonApiAgentId;     // JSON API Request Agent
+    uint256 public websiteParseAgentId; // LLM Parse Website Agent
+    uint256 public llmAgentId;          // LLM Inference Agent
+
+    // Keep track of which task belongs to which workflow
+    mapping(uint256 => bytes32) public taskToEvidenceHash;
+    mapping(uint256 => uint256) public taskToTargetChainId;
 
     // ─── Constructor ──────────────────────────────────────────────────────────
 
-    constructor(address initialOwner) Ownable(initialOwner) {}
+    constructor(address initialOwner, address _agentManager) Ownable(initialOwner) {
+        agentManager = IAgentManager(_agentManager);
+
+        // Real Testnet Agent IDs from Somnia Agents Explorer
+        jsonApiAgentId     = 13174292974160097713;
+        websiteParseAgentId = 12875401142070969085;
+        llmAgentId          = 12847293847561029384;
+    }
 
     // ─── Configuration ────────────────────────────────────────────────────────
 
-    function setAgents(
-        address metric,
-        address semantic,
-        address predictive
+    function setAgentIds(
+        uint256 _jsonApi,
+        uint256 _websiteParse,
+        uint256 _llm
     ) external onlyOwner {
-        admMetricAgent = metric;
-        admSemanticAgent = semantic;
-        admPredictiveAgent = predictive;
-        emit AgentRegistered(metric, "ADM_METRIC");
-        emit AgentRegistered(semantic, "ADM_SEMANTIC");
-        emit AgentRegistered(predictive, "ADM_PREDICTIVE");
+        jsonApiAgentId = _jsonApi;
+        websiteParseAgentId = _websiteParse;
+        llmAgentId = _llm;
     }
 
-    // ─── ADM_METRIC (Fast-Path) ───────────────────────────────────────────────
-
-    /// @notice Called by ADM_METRIC (JSON API Agent) on a 60s loop.
-    /// @param metricDeviation Percentage deviation of TVL/Price (0-100).
-    function ingestMetricData(
-        uint256 metricDeviation,
-        uint8 confidence,
-        bytes32 evidence,
-        uint256 targetChainId
-    ) external {
-        require(msg.sender == admMetricAgent, "Unauthorized: Not ADM_METRIC");
-
-        // [FAST-PATH BYPASS] If Math Threshold > 15%
-        if (metricDeviation > 15) {
-            emit FastPathTriggered(metricDeviation);
-            
-            // Skip LLM Consensus and emit RiskEvent instantly
-            uint8 severity = metricDeviation > 50 ? 4 : 3; // CRITICAL or ELEVATED
-            
-            // type 4 = CROSS-CHAIN ESCAPE (from Action Executor mapping)
-            emit RiskEvent(4, confidence, severity, evidence, targetChainId);
-        }
+    function setAgentManager(address _agentManager) external onlyOwner {
+        agentManager = IAgentManager(_agentManager);
     }
 
-    // ─── ADM_SEMANTIC & ADM_PREDICTIVE (Slow-Path) ────────────────────────────
+    // ─── ADM_METRIC (Fast-Path) ──────────────────────────────────────────────
 
-    /// @notice Called by ADM_SEMANTIC (5m loop) or ADM_PREDICTIVE (6h loop).
-    function ingestSemanticData(
+    /// @notice Dispatch a JSON API fetch task to the Somnia JSON API Request Agent
+    function requestMetricData(
+        string calldata taskData,
         bytes32 evidenceHash,
-        uint8 confidence,
-        uint8 computedSeverity,
         uint256 targetChainId
-    ) external {
-        require(
-            msg.sender == admSemanticAgent || msg.sender == admPredictiveAgent,
-            "Unauthorized: Not Semantic/Predictive Agent"
+    ) external payable {
+        uint256 taskId = agentManager.createTask{value: msg.value}(
+            jsonApiAgentId,
+            taskData
         );
 
-        // [SLOW-PATH CONSENSUS]
-        emit SlowPathConsensusRequested(evidenceHash);
+        taskToEvidenceHash[taskId] = evidenceHash;
+        taskToTargetChainId[taskId] = targetChainId;
 
-        // In a fully native Somnia environment, this would await LLM Validator consensus.
-        // For the hackathon, we simulate the Validator confirming the threat if confidence is high.
-        if (confidence > 80 && computedSeverity >= 3) {
-            // Emit RiskEvent for CROSS-CHAIN ESCAPE (4)
-            emit RiskEvent(4, confidence, computedSeverity, evidenceHash, targetChainId);
+        emit AgentTaskCreated(taskId, jsonApiAgentId, "ADM_METRIC");
+    }
+
+    // ─── ADM_SEMANTIC & ADM_PREDICTIVE (Slow-Path) ───────────────────────────
+
+    /// @notice Dispatch a website parse task to the Somnia LLM Parse Website Agent
+    function requestWebsiteParse(
+        string calldata taskData,
+        bytes32 evidenceHash,
+        uint256 targetChainId
+    ) external payable {
+        uint256 taskId = agentManager.createTask{value: msg.value}(
+            websiteParseAgentId,
+            taskData
+        );
+
+        taskToEvidenceHash[taskId] = evidenceHash;
+        taskToTargetChainId[taskId] = targetChainId;
+
+        emit AgentTaskCreated(taskId, websiteParseAgentId, "ADM_PREDICTIVE");
+    }
+
+    /// @notice Dispatch an LLM inference task to the Somnia LLM Inference Agent
+    function requestLLMInference(
+        string calldata taskData,
+        bytes32 evidenceHash,
+        uint256 targetChainId
+    ) external payable {
+        uint256 taskId = agentManager.createTask{value: msg.value}(
+            llmAgentId,
+            taskData
+        );
+
+        taskToEvidenceHash[taskId] = evidenceHash;
+        taskToTargetChainId[taskId] = targetChainId;
+
+        emit AgentTaskCreated(taskId, llmAgentId, "ADM_SEMANTIC");
+    }
+
+    // ─── Result Processing (called by backend after TaskCompleted event) ─────
+
+    /// @notice Called by the backend once the off-chain agent result is available
+    function reportMetricResult(
+        uint256 taskId,
+        uint256 metricDeviation
+    ) external onlyOwner {
+        if (metricDeviation > 15) {
+            emit FastPathTriggered(metricDeviation);
+
+            uint8 severity = metricDeviation > 50 ? 4 : 3;
+            emit RiskEvent(
+                4,
+                100,
+                severity,
+                taskToEvidenceHash[taskId],
+                taskToTargetChainId[taskId]
+            );
         }
     }
+
+    /// @notice Called by the backend once the LLM inference result is available
+    function reportSemanticResult(
+        uint256 taskId,
+        uint8 computedSeverity
+    ) external onlyOwner {
+        bytes32 evidenceHash = taskToEvidenceHash[taskId];
+        emit SlowPathConsensusRequested(evidenceHash);
+
+        if (computedSeverity >= 3) {
+            emit RiskEvent(
+                4,
+                100,
+                computedSeverity,
+                evidenceHash,
+                taskToTargetChainId[taskId]
+            );
+        }
+    }
+
+    // Support receiving STT
+    receive() external payable {}
 }

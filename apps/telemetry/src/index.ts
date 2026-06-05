@@ -9,6 +9,7 @@ import { startBroadcastBridge, getClientCount } from './ws/broadcast.js';
 import { handleClientConnection } from './ws/client-handler.js';
 import { startSomniaSubscriber } from './rpc/somnia-subscriber.js';
 import { startTier1Gate } from './telemetry/tier1-gate.js';
+import { startRelayer, isAutoEscalateEnabled, setAutoEscalateEnabled } from './telemetry/relayer.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -127,6 +128,20 @@ app.get('/api/signals', async (c) => {
   }
 });
 
+// ─── Auto-Escalate Settings API ───────────────────────────────────────────────
+app.get('/api/settings/auto-escalate', (c) => {
+  return c.json({ enabled: isAutoEscalateEnabled() });
+});
+
+app.post('/api/settings/auto-escalate', async (c) => {
+  const body = await c.req.json();
+  if (typeof body.enabled === 'boolean') {
+    setAutoEscalateEnabled(body.enabled);
+    return c.json({ enabled: body.enabled });
+  }
+  return c.json({ error: 'Invalid payload' }, 400);
+});
+
 // ─── Initialise DB schema ─────────────────────────────────────────────────────
 async function runMigrations(): Promise<void> {
   const schemaPath = path.join(__dirname, 'db', 'schema.sql');
@@ -180,6 +195,9 @@ async function main(): Promise<void> {
 
   // Start Tier 1 gate (Forta + DefiLlama + consensus)
   await startTier1Gate();
+
+  // Start the automated transaction Relayer
+  await startRelayer();
 
   console.log(
     `[telemetry] ✅ Server running on http://localhost:${config.PORT}\n` +

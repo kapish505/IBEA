@@ -1,21 +1,10 @@
 {
   "name": "@ibea/lifi",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "typecheck": "tsc --noEmit"
-  },
+  "main": "src/index.ts",
   "dependencies": {
-    "@ibea/shared": "workspace:*",
-    "@lifi/sdk": "^3.2.0",
-    "viem": "^2.21.0",
-    "zod": "^3.23.8"
-  },
-  "devDependencies": {
-    "typescript": "^5.6.0"
+    "@lifi/sdk": "^3.0.0",
+    "viem": "^2.23.2"
   }
 }

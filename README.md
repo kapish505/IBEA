@@ -2,80 +2,80 @@
 
 **Autonomous Defense Infrastructure for Onchain Capital on Somnia Network**
 
-IBEA is a production-grade multi-tier autonomous defense system for DeFi protocols and liquidity providers. It combines ultra-fast deterministic telemetry, asynchronous semantic AI reasoning, bounded autonomous orchestration, mathematically enforced execution invariants, and deterministic cross-chain evacuation — all built on Somnia's native agent infrastructure.
+IBEA is a production-grade multi-tier autonomous defense system for DeFi protocols. It combines real-time telemetry, M-of-N consensus threat validation, AI-powered semantic reasoning, mathematically enforced execution invariants, and deterministic cross-chain evacuation — built on Somnia's native agent infrastructure and Somnia Shannon Testnet.
 
 ---
 
-## Core Guarantees
+## Architecture Overview
 
-1. **No unrestricted AI execution** — all AI outputs are bounded to a 4-byte `StrategyEnum`. The AI never generates calldata.
-2. **Event-driven, never cron-driven** — all telemetry uses WebSocket subscriptions and RPC event listeners.
-3. **ODIG-bound execution** — every capital movement is atomically invariant-checked before execution. If invariants fail, an emergency freeze triggers instead.
-4. **Zero mock data** — all metrics, telemetry signals, and chart data originate from real sources (Somnia RPC, DefiLlama, Forta, LI.FI SDK).
+```
+DefiLlama API (TVL monitoring, 60s polls)
+        ↓ HTTP
+Layer 0 Reflex Engine (Node.js / Hono)
+        ↓ Redis pub/sub
+M-of-N Consensus Gate (tier1-gate.ts)
+        ↓ escalation threshold crossed
+KeeperHub Relayer → LI.FI cross-chain route
+        ↓
+ODIGGuard (5 invariant checks, onchain)
+        ↓
+SafeHarborRegistry (pre-approved destinations only)
+        ↓
+LI.FI Diamond → cross-chain fund evacuation
+
+Real-time feed → Redis → WebSocket → SRO Dashboard (Next.js)
+```
+
+### Five Contract Layers
+
+| Contract | Role |
+|---|---|
+| `IBEACore` | Central coordinator, alert level state machine |
+| `EscalationGate` | M-of-N validation, tier classification |
+| `ThreatVectorMatrix` | 5-dimension risk state with exponential decay |
+| `KeeperRegistry` | Whitelist of authorized keeper wallets |
+| `ODIGGuard` | Final atomic invariant guard before execution |
+| `SafeHarborRegistry` | Approved destination chains and vault addresses |
+| `SemanticBurstEngine` | Somnia AI agent orchestration on escalation |
 
 ---
 
-## Architecture
+## Deployed Contracts (Somnia Shannon Testnet — Chain ID: 50312)
 
-```
-USER / LP
-    ↓
-SRO Dashboard (Next.js 15)
-    ↓ WebSocket
-Telemetry Service (Hono)
-    ↓ Somnia RPC + Forta + DefiLlama
-IBEA Core (Onchain — Somnia Shannon)
-    │
-    ├── EscalationGate (M-of-N validation)
-    ├── SemanticBurstEngine (3-tier Somnia agents)
-    ├── ThreatVectorMatrix (5-dim, decaying)
-    ├── KeeperHub Runtime (offchain orchestration)
-    │       └── LI.FI Route Fetcher
-    └── ODIGGuard (invariant enforcement)
-            └── SafeHarborRegistry
-```
+| Contract | Address |
+|---|---|
+| IBEACore | `0x3d944021A2eA8e8492F4FC3B9852D8837D3ff5d8` |
+| ThreatVectorMatrix | `0xf1477fB77aD4b65EE666479bFC6B3F4EC1617148` |
+| EscalationGate | `0xB420e68e7Ed96aa9f04eFa3f1b6Db973059e4489` |
+| SemanticBurstEngine | `0xC7c2B004Dc5Ee30D3a1114b6f33E989c81dD0d2F` |
+| KeeperRegistry | `0xB46cEd9F82335A2Fd1cA12c899C23e8d5AeFE35e` |
+| SafeHarborRegistry | `0xDAec7FCa10760AD762B46ebdcAD4436d5aEBe6a0` |
+| ODIGGuard | `0xe19A77060b915f6A0Cb7f757501EDF620A33F04b` |
+| SROCoordinator | `0x686325C209a6C01CAEC87ff4249f1181111c6F0A` |
 
-### Five-Layer Separation
+Explorer: https://shannon-explorer.somnia.network
 
-| Layer | Role | Location |
-|---|---|---|
-| EscalationGate | M-of-N multi-source anomaly validation | Onchain |
-| SemanticBurstEngine | Dormant → activated; wraps 3 Somnia agent calls | Onchain |
-| ThreatVectorMatrix | 5-dim risk state with exponential decay | Onchain |
-| KeeperHub Runtime | Offchain orchestration + strategy selection | Offchain |
-| ODIG Guards | Final atomic invariant enforcement | Onchain |
+---
+
+## Somnia Shannon Testnet
+
+| Property | Value |
+|---|---|
+| Chain ID | `50312` |
+| RPC | `https://dream-rpc.somnia.network` |
+| WebSocket | `wss://dream-rpc.somnia.network` |
+| Explorer | `https://shannon-explorer.somnia.network` |
+| Block time | ~100ms |
+| Native token | STT |
 
 ---
 
 ## Tech Stack
 
-### Frontend
-- **Next.js 15** App Router + TypeScript
-- **Tailwind CSS** with custom design tokens
-- **shadcn/ui** components
-- **Framer Motion** for state-driven animations
-- **Zustand** for real-time state
-- **Viem + Wagmi** for wallet connection (custom UI — no RainbowKit)
-- **React Query** for HTTP data
-- **Recharts** for threat vector visualization
-
-### Smart Contracts
-- **Solidity ^0.8.24**
-- **Foundry** for testing and deployment
-- **OpenZeppelin** for security primitives
-- **Somnia Shannon Testnet** (Chain ID: 50312)
-
-### Backend
-- **Hono** WebSocket telemetry service
-- **PostgreSQL** for persistent state
-- **Redis** pub/sub for real-time fan-out
-- **Ponder** event indexer
-
-### Integrations
-- **Somnia native agents** — EVM contract calls to JSON API, Website Parse, and LLM Inference agents
-- **LI.FI SDK** (`@lifi/sdk`) — bounded cross-chain evacuation routes
-- **Forta** — real-time DeFi threat alerts
-- **DefiLlama** — TVL change monitoring
+- **Frontend**: Next.js 15, TypeScript, Tailwind CSS, Framer Motion, Zustand, Viem, Wagmi
+- **Backend**: Hono (Node.js), PostgreSQL, Redis, WebSocket
+- **Contracts**: Solidity ^0.8.24, Foundry, OpenZeppelin
+- **Integrations**: DefiLlama TVL API, LI.FI cross-chain SDK, KeeperHub
 
 ---
 
@@ -84,130 +84,36 @@ IBEA Core (Onchain — Somnia Shannon)
 ```
 ibea/
 ├── apps/
-│   ├── web/                    # Next.js 15 SRO Dashboard
-│   └── telemetry/              # Hono WebSocket + RPC telemetry service
+│   ├── web/              # Next.js 15 SRO Dashboard
+│   └── telemetry/        # Hono WebSocket + telemetry service
 ├── packages/
-│   ├── contracts/              # Foundry Solidity contracts
-│   ├── indexer/                # Ponder event indexer
-│   ├── keeper/                 # KeeperHub orchestration runtime
-│   ├── lifi/                   # LI.FI SDK route fetcher
-│   ├── shared/                 # Shared types, ABIs, chain config, constants
-│   └── ui/                     # Shared component library
+│   ├── contracts/        # Foundry Solidity contracts
+│   ├── keeper/           # KeeperHub dispatch client
+│   └── lifi/             # LI.FI SDK route fetcher
 ├── turbo.json
-├── pnpm-workspace.yaml
-└── .env.example
+└── pnpm-workspace.yaml
 ```
-
----
-
-## Getting Started
-
-### Prerequisites
-- Node.js ≥ 20
-- pnpm ≥ 9
-- PostgreSQL (running locally or remote)
-- Redis (running locally or remote)
-- Foundry (`curl -L https://foundry.paradigm.xyz | bash`)
-
-### Setup
-
-```bash
-# Clone and install
-git clone <repo>
-cd ibea
-pnpm install
-
-# Copy environment config
-cp .env.example .env
-# Fill in: KEEPER_PRIVATE_KEY, NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID, FORTA_BOT_IDS
-# Somnia agent addresses will be available from Somnia team
-
-# Start infrastructure (ensure Postgres and Redis are running locally)
-# e.g., `redis-server` and your local postgres service
-
-# Deploy contracts to Somnia Shannon Testnet
-pnpm contracts:deploy
-
-# Start all services
-pnpm dev
-```
-
-### Contract Deployment
-
-```bash
-cd packages/contracts
-
-# Set env
-export SOMNIA_RPC_URL=https://dream-rpc.somnia.network
-export PRIVATE_KEY=<your-deployer-key>
-
-# Deploy
-forge script script/DeployCore.s.sol --rpc-url $SOMNIA_RPC_URL --broadcast --verify
-
-# After deployment, copy addresses to .env
-```
-
----
-
-## Threat Vector Decay Mechanics
-
-Each of the five threat dimensions decays exponentially per block:
-
-```
-value_new = value_current × DECAY_FACTOR / 1e18
-```
-
-Where `DECAY_FACTOR = 0.995e18` (applied every `DECAY_INTERVAL = 10 blocks` ≈ 1 second on Somnia).
-
-This creates **adaptive equilibrium** — stale escalations don't persist. If no new telemetry reinforces a dimension, the system naturally de-escalates. The KeeperHub offchain decay tracker mirrors this model before submitting onchain updates to avoid gas waste.
 
 ---
 
 ## Security Architecture
 
-### ODIG Invariant Checks (in order)
-1. **TWAP Safety** — current price must be within `MIN_TWAP_HEALTH_RATIO` of TWAP
-2. **Stablecoin Health** — destination stablecoin peg must be ≥ `MIN_STABLECOIN_PEG_RATIO`
-3. **Bridge Validity** — LI.FI bridge must be operational and not flagged
-4. **Slippage Bounds** — route slippage must not exceed `MAX_SLIPPAGE_BPS`
-5. **Safe Harbor Verification** — destination must be in `SafeHarborRegistry`
+### ODIGGuard Invariant Checks (enforced atomically before any execution)
 
-If any check fails: `_executeEmergencyFreeze()` — no capital movement occurs.
+1. **Oracle Price Health** — asset price must be above `minimumHealthThreshold`. Failure triggers emergency freeze.
+2. **TWAP Deviation** — spot price must not deviate from 30-minute TWAP by more than `maxTwapDeviationBps` (default 500 bps = 5%). Guards against flash-loan oracle manipulation.
+3. **Stablecoin Health** — if asset is a registered stablecoin, depeg must not exceed `maxStablecoinDepegBps` (default 200 bps = 2%).
+4. **Safe Harbor Verification** — destination chain ID and vault address from LI.FI calldata must be registered in `SafeHarborRegistry`. Any unknown destination causes an emergency freeze.
+5. **LI.FI Execution** — if all invariants pass, the LI.FI diamond call is made. On failure, reverts with `LiFiRouteFailed`.
 
-### AI Safety Constraints
-- LLM Inference Agent output is strictly `(uint256 protocolId, uint8 threatScore, uint8 strategyEnum, uint256 targetChainId)`
-- `strategyEnum` is a bounded 4-value enum — no arbitrary string outputs
-- The AI never generates calldata
-- ODIG validates every execution independently of AI output
+If any invariant fails → `_executeEmergencyFreeze()` is called and no capital moves.
 
----
+### Access Control
 
-## Network: Somnia Shannon Testnet
-
-| Property | Value |
-|---|---|
-| Chain ID | 50312 |
-| RPC | https://dream-rpc.somnia.network |
-| WebSocket | wss://dream-rpc.somnia.network |
-| Explorer | https://shannon-explorer.somnia.network |
-| Block time | ~100ms |
-| Finality | Sub-second (deterministic) |
-| Native token | STT |
-
-Somnia's ~100ms block times and sub-second deterministic finality are what make IBEA's real-time threat response architecture possible. Traditional chains (1-12s blocks) cannot support the latency requirements of autonomous DeFi defense.
-
----
-
-## Deployment
-
-| Service | Platform |
-|---|---|
-| Frontend | Vercel |
-| Telemetry Service | Railway / Fly.io |
-| PostgreSQL | Railway Postgres |
-| Redis | Railway Redis / Upstash |
-| Ponder Indexer | Railway |
-| Contracts | Somnia Shannon Testnet |
+- `executeDefensiveStrategy` on `ODIGGuard` is restricted to `keeperHub` only (`onlyKeeperHub` modifier)
+- `keeperHub` address is set at deploy time and updatable only by `owner` (2-step Ownable)
+- `SafeHarborRegistry` entries are set only by `owner`
+- `triggerStrategy` on `IBEACore` is restricted to `keeperHub` only
 
 ---
 

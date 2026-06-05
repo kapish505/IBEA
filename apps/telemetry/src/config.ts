@@ -36,6 +36,13 @@ const envSchema = z.object({
   TVL_CHANGE_THRESHOLD_PCT: z.coerce.number().default(5),
   FORTA_POLL_INTERVAL_MS: z.coerce.number().default(15_000),
   DEFILLAMA_POLL_INTERVAL_MS: z.coerce.number().default(60_000),
+
+  // AI Agent Config
+  SEMANTIC_POLL_INTERVAL_MS: z.coerce.number().default(300_000), // 5 minutes
+  PREDICTIVE_POLL_INTERVAL_MS: z.coerce.number().default(21_600_000), // 6 hours
+
+  // Relayer
+  RELAYER_PRIVATE_KEY: z.string().startsWith('0x').length(66).optional(),
 });
 
 function loadConfig() {
@@ -78,6 +85,10 @@ function loadConfig() {
     TVL_CHANGE_THRESHOLD_PCT: process.env['TVL_CHANGE_THRESHOLD_PCT'],
     FORTA_POLL_INTERVAL_MS: process.env['FORTA_POLL_INTERVAL_MS'],
     DEFILLAMA_POLL_INTERVAL_MS: process.env['DEFILLAMA_POLL_INTERVAL_MS'],
+    GEMINI_API_KEY: process.env['GEMINI_API_KEY'],
+    SEMANTIC_POLL_INTERVAL_MS: process.env['SEMANTIC_POLL_INTERVAL_MS'],
+    PREDICTIVE_POLL_INTERVAL_MS: process.env['PREDICTIVE_POLL_INTERVAL_MS'],
+    RELAYER_PRIVATE_KEY: process.env['RELAYER_PRIVATE_KEY'],
   };
 
   const parsed = envSchema.safeParse(rawEnv);

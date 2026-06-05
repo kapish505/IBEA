@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
+import { subscribeWithSelector, persist, createJSONStorage } from 'zustand/middleware'
 
 // ─── Type Definitions ───────────────────────────────────────────────────────
 
@@ -208,7 +208,8 @@ const initialSomniaMetrics: SomniaMetrics = {
 // ─── Store ───────────────────────────────────────────────────────────────────
 
 export const useIBEAStore = create<IbeaStore>()(
-  subscribeWithSelector((set, get) => ({
+  persist(
+    subscribeWithSelector((set, get) => ({
     // Connection
     connectionStatus: 'disconnected',
     setConnectionStatus: (status) => set({ connectionStatus: status }),
@@ -333,7 +334,12 @@ export const useIBEAStore = create<IbeaStore>()(
         safeHarborDestinations: [],
         semanticBurstActive: false,
       }),
-  }))
+  })),
+  {
+    name: 'ibea-store',
+    storage: createJSONStorage(() => sessionStorage),
+  }
+  )
 )
 
 // ─── Selectors ───────────────────────────────────────────────────────────────

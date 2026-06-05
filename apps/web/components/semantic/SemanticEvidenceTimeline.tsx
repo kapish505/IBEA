@@ -12,7 +12,7 @@ export function SemanticEvidenceTimeline() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-4">
       {escalations.map((esc, i) => (
         <div key={i} className="flex gap-4">
           <div className="flex flex-col items-center flex-shrink-0">
