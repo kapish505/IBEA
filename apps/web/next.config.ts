@@ -2,11 +2,7 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
-  experimental: {
-    turbo: {},
-  },
   async rewrites() {
     return [
       {
@@ -26,10 +22,6 @@ const nextConfig: NextConfig = {
         ],
       },
     ]
-  },
-  webpack(config) {
-    config.externals = config.externals || []
-    return config
   },
 }
 

@@ -82,11 +82,10 @@ export async function startRelayer(): Promise<() => void> {
           if (targetChainId !== config.SOMNIA_CHAIN_ID) {
             await publishArchLog(`Target is cross-chain (${targetChainId}). Querying LI.FI for optimal evacuation route...`, 'SUCCESS', 'LAYER_4');
             const route = await fetchLifiRoute({
-              fromChain: config.SOMNIA_CHAIN_ID,
-              toChain: targetChainId,
+              targetChainId: targetChainId,
+              targetAsset: '0x0000000000000000000000000000000000000000',
               amount: '1000000000000000000',
-              fromToken: '0x0000000000000000000000000000000000000000', // Native STT
-              toToken: '0x0000000000000000000000000000000000000000'
+              userAddress: '0x0000000000000000000000000000000000000000' // dummy address for quote
             });
             if (route) {
                await publishArchLog(`LI.FI cross-chain calldata generated successfully.`, 'SUCCESS', 'LAYER_4');
