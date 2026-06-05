@@ -1,0 +1,25 @@
+{
+  "name": "@ibea/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./agents": "./src/agents.ts",
+    "./chains": "./src/chains.ts",
+    "./types": "./src/types.ts",
+    "./abis": "./src/abis/index.ts",
+    "./constants": "./src/constants.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "viem": "^2.21.0",
+    "zod": "^3.23.8"
+  }
+}

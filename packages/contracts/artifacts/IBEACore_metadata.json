@@ -1,0 +1,837 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "initialOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "initialKeeperHub",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "EnforcedPause",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ExpectedPause",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "moduleId",
+						"type": "bytes32"
+					}
+				],
+				"name": "InvalidModule",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "moduleId",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "address",
+						"name": "addr",
+						"type": "address"
+					}
+				],
+				"name": "ModuleAlreadySet",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "caller",
+						"type": "address"
+					}
+				],
+				"name": "NotKeeperHub",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					}
+				],
+				"name": "OwnableInvalidOwner",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "OwnableUnauthorizedAccount",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ReentrancyGuardReentrantCall",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "SystemFrozen",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ZeroAddress",
+				"type": "error"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "enum IIBEACore.AlertLevel",
+						"name": "prev",
+						"type": "uint8"
+					},
+					{
+						"indexed": true,
+						"internalType": "enum IIBEACore.AlertLevel",
+						"name": "next",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"name": "AlertLevelChanged",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "oldHub",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newHub",
+						"type": "address"
+					}
+				],
+				"name": "KeeperHubUpdated",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "bytes32",
+						"name": "moduleId",
+						"type": "bytes32"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "oldAddr",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newAddr",
+						"type": "address"
+					}
+				],
+				"name": "ModuleUpdated",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "previousOwner",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferStarted",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "previousOwner",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferred",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "Paused",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "epoch",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "enum IIBEACore.AlertLevel",
+						"name": "alertLevel",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "aggregateThreat",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"name": "RiskEvent",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint8",
+						"name": "strategyEnum",
+						"type": "uint8"
+					},
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "protocolId",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"name": "StrategyTriggered",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "Unpaused",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "MODULE_ESCALATION_GATE",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "MODULE_KEEPER_REGISTRY",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "MODULE_ODIG_GUARD",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "MODULE_SAFE_HARBOR_REGISTRY",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "MODULE_SEMANTIC_BURST_ENGINE",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "MODULE_THREAT_VECTOR_MATRIX",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "ORANGE_THRESHOLD",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "RED_THRESHOLD",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "YELLOW_THRESHOLD",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "acceptOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "alertLevel",
+				"outputs": [
+					{
+						"internalType": "enum IIBEACore.AlertLevel",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "computeRisk",
+				"outputs": [
+					{
+						"internalType": "enum IIBEACore.AlertLevel",
+						"name": "level",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint256",
+						"name": "aggregateThreat",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "epoch",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "moduleId",
+						"type": "bytes32"
+					}
+				],
+				"name": "getModule",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "keeperHub",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "pause",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "paused",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "pendingOwner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "renounceOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "hub",
+						"type": "address"
+					}
+				],
+				"name": "setKeeperHub",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "moduleId",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "address",
+						"name": "moduleAddr",
+						"type": "address"
+					}
+				],
+				"name": "setModule",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint8",
+						"name": "strategyEnum",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint256",
+						"name": "protocolId",
+						"type": "uint256"
+					}
+				],
+				"name": "triggerStrategy",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "unpause",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"errors": {
+				"EnforcedPause()": [
+					{
+						"details": "The operation failed because the contract is paused."
+					}
+				],
+				"ExpectedPause()": [
+					{
+						"details": "The operation failed because the contract is not paused."
+					}
+				],
+				"OwnableInvalidOwner(address)": [
+					{
+						"details": "The owner is not a valid owner account. (eg. `address(0)`)"
+					}
+				],
+				"OwnableUnauthorizedAccount(address)": [
+					{
+						"details": "The caller account is not authorized to perform an operation."
+					}
+				],
+				"ReentrancyGuardReentrantCall()": [
+					{
+						"details": "Unauthorized reentrant call."
+					}
+				]
+			},
+			"events": {
+				"Paused(address)": {
+					"details": "Emitted when the pause is triggered by `account`."
+				},
+				"Unpaused(address)": {
+					"details": "Emitted when the pause is lifted by `account`."
+				}
+			},
+			"kind": "dev",
+			"methods": {
+				"acceptOwnership()": {
+					"details": "The new owner accepts the ownership transfer."
+				},
+				"constructor": {
+					"params": {
+						"initialKeeperHub": "Keeper hub address (may be updated later).",
+						"initialOwner": "Owner address (uses Ownable2Step for safe transfers)."
+					}
+				},
+				"owner()": {
+					"details": "Returns the address of the current owner."
+				},
+				"paused()": {
+					"details": "Returns true if the contract is paused, and false otherwise."
+				},
+				"pendingOwner()": {
+					"details": "Returns the address of the pending owner."
+				},
+				"renounceOwnership()": {
+					"details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+				},
+				"transferOwnership(address)": {
+					"details": "Starts the ownership transfer of the contract to a new account. Replaces the pending transfer if there is one. Can only be called by the current owner. Setting `newOwner` to the zero address is allowed; this can be used to cancel an initiated ownership transfer."
+				}
+			},
+			"title": "IBEACore",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"computeRisk()": {
+					"notice": "Reads the current ThreatVectorMatrix state, computes an aggregate score,         updates AlertLevel, and emits a RiskEvent."
+				},
+				"pause()": {
+					"notice": "Pause the core (prevents computeRisk and triggerStrategy)."
+				},
+				"triggerStrategy(uint8,uint256)": {
+					"notice": "Keeper-only function to trigger a defensive strategy.         Routes the call to the ODIGGuard module."
+				},
+				"unpause()": {
+					"notice": "Unpause the core."
+				}
+			},
+			"notice": "Central coordinator for the Invariant-Bounded Escalation Architecture.         IBEACore owns references to all IBEA modules and serves as the single         authoritative source of current alert level. It:           - Reads from ThreatVectorMatrix to compute aggregate risk           - Translates aggregate risk to AlertLevel and emits RiskEvent           - Routes strategy triggers to ODIGGuard           - Maintains the module registry           - Exposes the keeperHub interface used by downstream modifiers         Alert level thresholds (based on 0–10000 aggregate score):           GREEN:  0 – 2499           YELLOW: 2500 – 4999           ORANGE: 5000 – 7499           RED:    7500 – 10000",
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"src/IBEACore.sol": "IBEACore"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"@openzeppelin/contracts/access/Ownable.sol": {
+			"keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6",
+				"dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a"
+			]
+		},
+		"@openzeppelin/contracts/access/Ownable2Step.sol": {
+			"keccak256": "0xdcad8898fda432696597752e8ec361b87d85c82cb258115427af006dacf7128c",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://e2c9d517f0c136d54bd00cd57959d25681d4d6273f5bbbc263afe228303772f0",
+				"dweb:/ipfs/QmReNFjXBiufByiAAzfSQ2SM5r3qeUErn46BmN3yVRvrek"
+			]
+		},
+		"@openzeppelin/contracts/utils/Context.sol": {
+			"keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12",
+				"dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF"
+			]
+		},
+		"@openzeppelin/contracts/utils/Pausable.sol": {
+			"keccak256": "0xdb484371dfbb848cb6f5d70464e9ac9b2900e4164ead76bbce4fef0b44bcc68f",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://f9d6f6f6600a2bec622f699081b58350873b5e63ce05464d17d674a290bb8a7c",
+				"dweb:/ipfs/QmQKVzSQY1PM3Bid4QhgVVZyx6B4Jx7XgaQzLKHj38vJz8"
+			]
+		},
+		"@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
+			"keccak256": "0xa516cbf1c7d15d3517c2d668601ce016c54395bf5171918a14e2686977465f53",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://1e1d079e8edfb58efd23a311e315a4807b01b5d1cf153f8fa2d0608b9dec3e99",
+				"dweb:/ipfs/QmTBExeX2SDTkn5xbk5ssbYSx7VqRp9H4Ux1CY4uQM4b9N"
+			]
+		},
+		"@openzeppelin/contracts/utils/StorageSlot.sol": {
+			"keccak256": "0xcf74f855663ce2ae00ed8352666b7935f6cddea2932fdf2c3ecd30a9b1cd0e97",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://9f660b1f351b757dfe01438e59888f31f33ded3afcf5cb5b0d9bf9aa6f320a8b",
+				"dweb:/ipfs/QmarDJ5hZEgBtCmmrVzEZWjub9769eD686jmzb2XpSU1cM"
+			]
+		},
+		"src/IBEACore.sol": {
+			"keccak256": "0xccf24fef5e61f2e2f3ce95ebe0068579f735d9f02fd6eb0b1fe79b176c950675",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://f65d4624a26b3c382efd4d8d91451fd5b85d2710880f873e3b5452f477ab89ee",
+				"dweb:/ipfs/QmcZaHjsUtmp5XR89zzptwTHfdcZHbwCZxqBnfsRw2e9o1"
+			]
+		},
+		"src/interfaces/IEscalationGate.sol": {
+			"keccak256": "0x8ece88b899c22f1129610fe00c7ca5926f8940445aab99a8d2439777014d3554",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://c565d5036661c9a60ccce82515381bd8726de12628fea067d4705b6cad7bb089",
+				"dweb:/ipfs/QmScTFHBndmmTxUgFvqr7a53tSHvZ5qj5TsvjmLD41Y9a5"
+			]
+		},
+		"src/interfaces/IIBEACore.sol": {
+			"keccak256": "0x823b56a46d90d9fbb35be4e95063c66f9fe78f52615a0ea08e271ed275bc51de",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://474ae7286d6db0c8ef0b5496691d2c0e09e8936798e1ed4d19f81d824531b46b",
+				"dweb:/ipfs/QmR537Mr6xkPYGidWXtP7tySnLf7PFdbitjuY7b4xhA11L"
+			]
+		},
+		"src/interfaces/IODIGGuard.sol": {
+			"keccak256": "0xf8952f74caff6e36395bd8a1b74882c165c5b3bbe26be1682bbc6394c99b6c30",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://9ffee60fa26510e507614f6fe642c0af306d20457f87743e3f38fba22bc0fde3",
+				"dweb:/ipfs/QmYuZqCsxPVqAz1c7iVph852F1nTs5t2q9vrJDZc3L1y9G"
+			]
+		},
+		"src/interfaces/ISafeHarborRegistry.sol": {
+			"keccak256": "0xc54a80e3084bc2b1cfd761235b03cf592ea42a189a8b0a8fed5195b04b7be778",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://b956df4043a18d660908856bfe02f70e21091ae4afdc126838a7af8dad8f3c8b",
+				"dweb:/ipfs/QmQprHUNBwzt1sYjMh7KND92XfQeo7sdmp98xRaJvmxUPf"
+			]
+		},
+		"src/interfaces/ISomniaAgent.sol": {
+			"keccak256": "0xb6d7b9bce4b4aeb6999dc22dbfe94fd682de8dd530fe90d1bbf23ea311dc0795",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://680a070bca116d67ebcecc5b870d066781167327b771c72b3a4a1fe4609358bf",
+				"dweb:/ipfs/QmSKeUC1SoMBPm9wFuWzGL8VvucQmKKjwLcKPUVcwLFuvh"
+			]
+		},
+		"src/interfaces/IThreatVectorMatrix.sol": {
+			"keccak256": "0x884987f5147fb94e935b1c9bf27130fb5539f33832265578356fa8d6c3483d4f",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://901c73d8bce6848a8ea7d0dec94f3ee084cd1dd1b8d85fb2c45e7a925211f34d",
+				"dweb:/ipfs/QmVr1TM2B1GqPzTCJvvtVDBiKy8FcLarZqpV1GcJMymKfv"
+			]
+		},
+		"src/libraries/ThreatMath.sol": {
+			"keccak256": "0x3e38d84efb651814ee17cf044091b97eacf0701d2a3a37e0c5936f321fbb3fef",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://5628cd4fce23c8607d5d7e504e2adf36044d42a2378b2e954c716383c49d4893",
+				"dweb:/ipfs/QmbvtjVW9eL1YpWcYQK8fisV1QJYNTr361qResb864erck"
+			]
+		}
+	},
+	"version": 1
+}

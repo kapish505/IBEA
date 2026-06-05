@@ -1,0 +1,966 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "initialOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_keeperHub",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_oracle",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_safeHarborRegistry",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "ContractFrozen",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "bps",
+						"type": "uint256"
+					}
+				],
+				"name": "InvalidSlippageTolerance",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "LiFiRouteFailed",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "NotKeeperHub",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "price",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "threshold",
+						"type": "uint256"
+					}
+				],
+				"name": "OraclePriceBelowThreshold",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					}
+				],
+				"name": "OwnableInvalidOwner",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "OwnableUnauthorizedAccount",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ReentrancyGuardReentrantCall",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "chainId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "vault",
+						"type": "address"
+					}
+				],
+				"name": "SafeHarborViolation",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "actualBps",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "maxBps",
+						"type": "uint256"
+					}
+				],
+				"name": "SlippageExceeded",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "asset",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "depegBps",
+						"type": "uint256"
+					}
+				],
+				"name": "StablecoinHealthViolation",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "spotPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "twapPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "deviationBps",
+						"type": "uint256"
+					}
+				],
+				"name": "TWAPDeviationExceeded",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ZeroAddress",
+				"type": "error"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "initiator",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "block_",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"name": "EmergencyFreezeActivated",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "admin",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"name": "EmergencyFreezeLifted",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "targetAsset",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "lifiDiamond",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"name": "ExecutionAuthorized",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "oldThreshold",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "newThreshold",
+						"type": "uint256"
+					}
+				],
+				"name": "HealthThresholdUpdated",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "oldOracle",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newOracle",
+						"type": "address"
+					}
+				],
+				"name": "OracleUpdated",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "previousOwner",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferStarted",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "previousOwner",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferred",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "oldBps",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "newBps",
+						"type": "uint256"
+					}
+				],
+				"name": "SlippageToleranceUpdated",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "DEFAULT_HEALTH_THRESHOLD",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "DEFAULT_MAX_SLIPPAGE_BPS",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "DEFAULT_STABLECOIN_DEPEG_BPS",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "DEFAULT_TWAP_DEVIATION_BPS",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "STABLECOIN_PEG",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "TWAP_LOOKBACK",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "acceptOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "emergencyFreeze",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "targetAsset",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "lifiDiamond",
+						"type": "address"
+					},
+					{
+						"internalType": "bytes",
+						"name": "lifiData",
+						"type": "bytes"
+					}
+				],
+				"name": "executeDefensiveStrategy",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "isFrozen",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "asset",
+						"type": "address"
+					}
+				],
+				"name": "isStablecoin",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "keeperHub",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "liftFreeze",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "maxSlippageBps",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "maxStablecoinDepegBps",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "maxTwapDeviationBps",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "minimumHealthThreshold",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "oracle",
+				"outputs": [
+					{
+						"internalType": "contract IMinimalOracle",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "pendingOwner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "asset",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "isStable",
+						"type": "bool"
+					}
+				],
+				"name": "registerStablecoin",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "renounceOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "safeHarborRegistry",
+				"outputs": [
+					{
+						"internalType": "contract ISafeHarborRegistry",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "threshold",
+						"type": "uint256"
+					}
+				],
+				"name": "setHealthThreshold",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "newHub",
+						"type": "address"
+					}
+				],
+				"name": "setKeeperHub",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_oracle",
+						"type": "address"
+					}
+				],
+				"name": "setOracle",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "registry",
+						"type": "address"
+					}
+				],
+				"name": "setSafeHarborRegistry",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "bps",
+						"type": "uint256"
+					}
+				],
+				"name": "setSlippageTolerance",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "bps",
+						"type": "uint256"
+					}
+				],
+				"name": "setStablecoinDepegBps",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "bps",
+						"type": "uint256"
+					}
+				],
+				"name": "setTwapDeviationBps",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"details": "The keeper hub is the only address permitted to call executeDefensiveStrategy.      The owner may update oracle, thresholds, and lift the freeze.",
+			"errors": {
+				"OwnableInvalidOwner(address)": [
+					{
+						"details": "The owner is not a valid owner account. (eg. `address(0)`)"
+					}
+				],
+				"OwnableUnauthorizedAccount(address)": [
+					{
+						"details": "The caller account is not authorized to perform an operation."
+					}
+				],
+				"ReentrancyGuardReentrantCall()": [
+					{
+						"details": "Unauthorized reentrant call."
+					}
+				]
+			},
+			"kind": "dev",
+			"methods": {
+				"acceptOwnership()": {
+					"details": "The new owner accepts the ownership transfer."
+				},
+				"constructor": {
+					"params": {
+						"_keeperHub": "Address of the keeper hub.",
+						"_oracle": "Price oracle address.",
+						"_safeHarborRegistry": "Safe Harbor registry address.",
+						"initialOwner": "Owner (2-step for safety)."
+					}
+				},
+				"executeDefensiveStrategy(address,address,bytes)": {
+					"params": {
+						"lifiData": "ABI-encoded calldata for the LI.FI diamond call.",
+						"lifiDiamond": "Address of the LI.FI diamond router.",
+						"targetAsset": "Address of the asset being protected."
+					}
+				},
+				"owner()": {
+					"details": "Returns the address of the current owner."
+				},
+				"pendingOwner()": {
+					"details": "Returns the address of the pending owner."
+				},
+				"renounceOwnership()": {
+					"details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+				},
+				"transferOwnership(address)": {
+					"details": "Starts the ownership transfer of the contract to a new account. Replaces the pending transfer if there is one. Can only be called by the current owner. Setting `newOwner` to the zero address is allowed; this can be used to cancel an initiated ownership transfer."
+				}
+			},
+			"stateVariables": {
+				"_stablecoins": {
+					"details": "Registered stablecoin assets (address => isPeg)."
+				}
+			},
+			"title": "ODIGGuard",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"DEFAULT_HEALTH_THRESHOLD()": {
+					"notice": "Default minimum price (WAD-scaled). Below this the asset is considered unhealthy."
+				},
+				"DEFAULT_MAX_SLIPPAGE_BPS()": {
+					"notice": "Default maximum slippage in basis points (100 bps = 1%)."
+				},
+				"DEFAULT_STABLECOIN_DEPEG_BPS()": {
+					"notice": "Default max stablecoin depeg in basis points (200 bps = 2%)."
+				},
+				"DEFAULT_TWAP_DEVIATION_BPS()": {
+					"notice": "Default max TWAP deviation in basis points (500 bps = 5%)."
+				},
+				"STABLECOIN_PEG()": {
+					"notice": "Stablecoin peg target, WAD-scaled (1 USD)."
+				},
+				"TWAP_LOOKBACK()": {
+					"notice": "TWAP lookback window in seconds (30 minutes)."
+				},
+				"emergencyFreeze()": {
+					"notice": "Manually triggers emergency freeze. Only keeper hub may call."
+				},
+				"executeDefensiveStrategy(address,address,bytes)": {
+					"notice": "Executes a defensive strategy via a LI.FI diamond call after validating         all critical invariants. On any invariant failure, triggers emergency freeze."
+				},
+				"isStablecoin(address)": {
+					"notice": "Returns whether an asset is registered as a stablecoin."
+				},
+				"keeperHub()": {
+					"notice": "The keeper hub address (only address that may call executeDefensiveStrategy)."
+				},
+				"liftFreeze()": {
+					"notice": "Lifts the emergency freeze. Only owner may call."
+				},
+				"maxSlippageBps()": {
+					"notice": "Maximum allowed slippage in basis points."
+				},
+				"maxStablecoinDepegBps()": {
+					"notice": "Maximum allowed stablecoin depeg in basis points."
+				},
+				"maxTwapDeviationBps()": {
+					"notice": "Maximum allowed TWAP deviation in basis points."
+				},
+				"minimumHealthThreshold()": {
+					"notice": "Minimum oracle price for the asset (WAD-scaled)."
+				},
+				"oracle()": {
+					"notice": "Price oracle."
+				},
+				"registerStablecoin(address,bool)": {
+					"notice": "Registers an asset as a stablecoin (applies depeg check)."
+				},
+				"safeHarborRegistry()": {
+					"notice": "Safe Harbor registry."
+				},
+				"setKeeperHub(address)": {
+					"notice": "Updates the keeper hub address."
+				},
+				"setSafeHarborRegistry(address)": {
+					"notice": "Updates the Safe Harbor registry address."
+				},
+				"setStablecoinDepegBps(uint256)": {
+					"notice": "Updates the stablecoin depeg tolerance."
+				},
+				"setTwapDeviationBps(uint256)": {
+					"notice": "Updates the TWAP deviation tolerance."
+				}
+			},
+			"notice": "On-chain Defensive Invariant Guard — THE CRITICAL INVARIANT GUARD.         Checks enforced before any defensive strategy execution:         1. CONTRACT NOT FROZEN — emergency freeze halts all execution.         2. ORACLE HEALTH — spot price must be above MINIMUM_HEALTH_THRESHOLD.         3. TWAP DEVIATION — spot price must not deviate from TWAP beyond MAX_TWAP_DEVIATION_BPS.            This guards against oracle manipulation (flash-loan attacks).         4. STABLECOIN HEALTH — if the asset is a registered stablecoin, its depeg            cannot exceed MAX_STABLECOIN_DEPEG_BPS (default 200 bps = 2%).         5. SAFE HARBOR MEMBERSHIP — the destination (chainId, vault) extracted from            the LI.FI calldata must be in the SafeHarborRegistry.         6. SLIPPAGE BOUNDS — expected vs actual execution amounts must be within            MAX_SLIPPAGE_BPS (default 100 bps = 1%).         On invariant failure: the contract automatically triggers an emergency freeze.         Strategy enum (informational, actual routing via LI.FI):           0 = PAUSE_ONLY         — emit event only, no asset movement           1 = PARTIAL_EXIT       — route via LI.FI           2 = SAFE_HARBOR_ESCAPE — route via LI.FI, stricter harbor check           3 = HEDGE_AND_THROTTLE — route via LI.FI with throttle params",
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"src/ODIGGuard.sol": "ODIGGuard"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"@openzeppelin/contracts/access/Ownable.sol": {
+			"keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6",
+				"dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a"
+			]
+		},
+		"@openzeppelin/contracts/access/Ownable2Step.sol": {
+			"keccak256": "0xdcad8898fda432696597752e8ec361b87d85c82cb258115427af006dacf7128c",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://e2c9d517f0c136d54bd00cd57959d25681d4d6273f5bbbc263afe228303772f0",
+				"dweb:/ipfs/QmReNFjXBiufByiAAzfSQ2SM5r3qeUErn46BmN3yVRvrek"
+			]
+		},
+		"@openzeppelin/contracts/utils/Context.sol": {
+			"keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12",
+				"dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF"
+			]
+		},
+		"@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
+			"keccak256": "0xa516cbf1c7d15d3517c2d668601ce016c54395bf5171918a14e2686977465f53",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://1e1d079e8edfb58efd23a311e315a4807b01b5d1cf153f8fa2d0608b9dec3e99",
+				"dweb:/ipfs/QmTBExeX2SDTkn5xbk5ssbYSx7VqRp9H4Ux1CY4uQM4b9N"
+			]
+		},
+		"@openzeppelin/contracts/utils/StorageSlot.sol": {
+			"keccak256": "0xcf74f855663ce2ae00ed8352666b7935f6cddea2932fdf2c3ecd30a9b1cd0e97",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://9f660b1f351b757dfe01438e59888f31f33ded3afcf5cb5b0d9bf9aa6f320a8b",
+				"dweb:/ipfs/QmarDJ5hZEgBtCmmrVzEZWjub9769eD686jmzb2XpSU1cM"
+			]
+		},
+		"src/ODIGGuard.sol": {
+			"keccak256": "0x68ef879e9b3db2fd8322dad3be1441829d081ff3d123e19ba13e1a438e001922",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://2cedd0851c5c908a16be8f06903cae8e9508af5b6cbb2da43f551143a113d3d9",
+				"dweb:/ipfs/QmPKN9BjFBCsaS7ztgmCb3ZybMSbPEGer3vcX51gzzBaG8"
+			]
+		},
+		"src/interfaces/IODIGGuard.sol": {
+			"keccak256": "0xf8952f74caff6e36395bd8a1b74882c165c5b3bbe26be1682bbc6394c99b6c30",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://9ffee60fa26510e507614f6fe642c0af306d20457f87743e3f38fba22bc0fde3",
+				"dweb:/ipfs/QmYuZqCsxPVqAz1c7iVph852F1nTs5t2q9vrJDZc3L1y9G"
+			]
+		},
+		"src/interfaces/ISafeHarborRegistry.sol": {
+			"keccak256": "0xc54a80e3084bc2b1cfd761235b03cf592ea42a189a8b0a8fed5195b04b7be778",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://b956df4043a18d660908856bfe02f70e21091ae4afdc126838a7af8dad8f3c8b",
+				"dweb:/ipfs/QmQprHUNBwzt1sYjMh7KND92XfQeo7sdmp98xRaJvmxUPf"
+			]
+		},
+		"src/libraries/ThreatMath.sol": {
+			"keccak256": "0x3e38d84efb651814ee17cf044091b97eacf0701d2a3a37e0c5936f321fbb3fef",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://5628cd4fce23c8607d5d7e504e2adf36044d42a2378b2e954c716383c49d4893",
+				"dweb:/ipfs/QmbvtjVW9eL1YpWcYQK8fisV1QJYNTr361qResb864erck"
+			]
+		}
+	},
+	"version": 1
+}

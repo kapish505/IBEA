@@ -1,0 +1,646 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "initialOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "requiredM",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "totalN",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "source",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "epoch",
+						"type": "uint256"
+					}
+				],
+				"name": "AlreadySubmitted",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "epoch",
+						"type": "uint256"
+					}
+				],
+				"name": "EpochExpired",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "required",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "total",
+						"type": "uint256"
+					}
+				],
+				"name": "InvalidQuorum",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "NotRegisteredSource",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					}
+				],
+				"name": "OwnableInvalidOwner",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "OwnableUnauthorizedAccount",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "source",
+						"type": "address"
+					}
+				],
+				"name": "SourceAlreadyRegistered",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ZeroWeight",
+				"type": "error"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "epoch",
+						"type": "uint256"
+					}
+				],
+				"name": "GateReset",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "previousOwner",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferred",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "requiredSources",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "totalSources",
+						"type": "uint256"
+					}
+				],
+				"name": "QuorumConfigured",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "source",
+						"type": "address"
+					}
+				],
+				"name": "SourceDeregistered",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "source",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "weight",
+						"type": "uint256"
+					}
+				],
+				"name": "SourceRegistered",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "source",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "epoch",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "dimension",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					}
+				],
+				"name": "ThreatSubmitted",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "epoch",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "aggregateThreat",
+						"type": "uint256"
+					}
+				],
+				"name": "ThresholdReached",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "EPOCH_BLOCKS",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "EPOCH_DECAY_INTERVAL",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "requiredM",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "totalN",
+						"type": "uint256"
+					}
+				],
+				"name": "configureQuorum",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "currentEpoch",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "source",
+						"type": "address"
+					}
+				],
+				"name": "deregisterSource",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "epoch",
+						"type": "uint256"
+					}
+				],
+				"name": "getEpochAggregate",
+				"outputs": [
+					{
+						"internalType": "uint256[5]",
+						"name": "",
+						"type": "uint256[5]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "epoch",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "source",
+						"type": "address"
+					}
+				],
+				"name": "hasSourceSubmitted",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "epoch",
+						"type": "uint256"
+					}
+				],
+				"name": "isQuorumReached",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "source",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "weight",
+						"type": "uint256"
+					}
+				],
+				"name": "registerSource",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "renounceOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "requiredSources",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "source",
+						"type": "address"
+					}
+				],
+				"name": "sourceWeight",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "epoch",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256[5]",
+						"name": "dimensionDeltas",
+						"type": "uint256[5]"
+					}
+				],
+				"name": "submitThreat",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "quorumReached",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "totalSources",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"details": "Epoch = current block number / EPOCH_BLOCKS. Sources submit within the same epoch window.",
+			"errors": {
+				"OwnableInvalidOwner(address)": [
+					{
+						"details": "The owner is not a valid owner account. (eg. `address(0)`)"
+					}
+				],
+				"OwnableUnauthorizedAccount(address)": [
+					{
+						"details": "The caller account is not authorized to perform an operation."
+					}
+				]
+			},
+			"kind": "dev",
+			"methods": {
+				"constructor": {
+					"params": {
+						"initialOwner": "Owner address.",
+						"requiredM": "M threshold for quorum.",
+						"totalN": "N total sources expected."
+					}
+				},
+				"owner()": {
+					"details": "Returns the address of the current owner."
+				},
+				"renounceOwnership()": {
+					"details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+				},
+				"submitThreat(uint256,uint256[5])": {
+					"details": "Sources submit raw dimension deltas. Aggregation is weighted.      Quorum is met when sum of weights of submitters >= requiredM * average_weight.      For simplicity quorum = count of unique submitters >= _requiredM."
+				},
+				"transferOwnership(address)": {
+					"details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+				}
+			},
+			"stateVariables": {
+				"_epochAggregates": {
+					"details": "epoch => aggregated dimension deltas"
+				},
+				"_epochLastDecay": {
+					"details": "epoch => last decay block"
+				},
+				"_epochSubmissionCount": {
+					"details": "Counts distinct submitters for an epoch using weight-sum heuristic.      Since each source has weight >= 1 and we track total weight sum,      we cannot simply divide (weights vary). We use a separate counter pattern      by storing submission count in the upper bits of _epochWeightSum.      For correctness, we use a dedicated mapping."
+				},
+				"_epochWeightSum": {
+					"details": "epoch => weighted submission count"
+				},
+				"_quorumReached": {
+					"details": "epoch => quorum reached flag"
+				},
+				"_sourceWeights": {
+					"details": "source address => weight (0 = not registered)"
+				},
+				"_submitted": {
+					"details": "epoch => source => has submitted"
+				}
+			},
+			"title": "EscalationGate",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"EPOCH_BLOCKS()": {
+					"notice": "Blocks per epoch window. At 100ms per block, 600 blocks ≈ 1 minute."
+				},
+				"EPOCH_DECAY_INTERVAL()": {
+					"notice": "Decay is applied every this many blocks to stale epoch aggregates."
+				},
+				"sourceWeight(address)": {
+					"notice": "Returns the registered weight for a source."
+				}
+			},
+			"notice": "M-of-N multi-source threat validation gate with exponential decay per block.         Architecture:         - Registered sources submit threat dimension deltas for a given epoch.         - When M sources have submitted, the epoch is considered quorum-reached.         - Aggregated deltas are made available to downstream consumers (ThreatVectorMatrix).         - Each epoch can optionally be forced-expired after a configurable TTL.         - Exponential decay reduces stale submissions: values decay by DECAY_FACTOR           for each EPOCH_DECAY_INTERVAL that passes without quorum.",
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"src/EscalationGate.sol": "EscalationGate"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"@openzeppelin/contracts/access/Ownable.sol": {
+			"keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6",
+				"dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a"
+			]
+		},
+		"@openzeppelin/contracts/utils/Context.sol": {
+			"keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12",
+				"dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF"
+			]
+		},
+		"src/EscalationGate.sol": {
+			"keccak256": "0x407ddbc528848c8dcb0a69c8856d9032e02049efdcd76e68802bf81d99877843",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://56376ce2712053befce24f37e825caca8402f5b01823bb3b0475e919fe6f3c80",
+				"dweb:/ipfs/QmP4cijA6ZFLuYa59gVQqSSWbYo3tR9LS9mF728K5djjoL"
+			]
+		},
+		"src/interfaces/IEscalationGate.sol": {
+			"keccak256": "0x8ece88b899c22f1129610fe00c7ca5926f8940445aab99a8d2439777014d3554",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://c565d5036661c9a60ccce82515381bd8726de12628fea067d4705b6cad7bb089",
+				"dweb:/ipfs/QmScTFHBndmmTxUgFvqr7a53tSHvZ5qj5TsvjmLD41Y9a5"
+			]
+		},
+		"src/interfaces/ISomniaAgent.sol": {
+			"keccak256": "0xb6d7b9bce4b4aeb6999dc22dbfe94fd682de8dd530fe90d1bbf23ea311dc0795",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://680a070bca116d67ebcecc5b870d066781167327b771c72b3a4a1fe4609358bf",
+				"dweb:/ipfs/QmSKeUC1SoMBPm9wFuWzGL8VvucQmKKjwLcKPUVcwLFuvh"
+			]
+		},
+		"src/libraries/ThreatMath.sol": {
+			"keccak256": "0x3e38d84efb651814ee17cf044091b97eacf0701d2a3a37e0c5936f321fbb3fef",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://5628cd4fce23c8607d5d7e504e2adf36044d42a2378b2e954c716383c49d4893",
+				"dweb:/ipfs/QmbvtjVW9eL1YpWcYQK8fisV1QJYNTr361qResb864erck"
+			]
+		}
+	},
+	"version": 1
+}

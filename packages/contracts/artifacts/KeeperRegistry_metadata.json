@@ -1,0 +1,485 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "initialOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "initialHub",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "keeper",
+						"type": "address"
+					}
+				],
+				"name": "KeeperAlreadyRegistered",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "keeper",
+						"type": "address"
+					}
+				],
+				"name": "KeeperNotRegistered",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "caller",
+						"type": "address"
+					}
+				],
+				"name": "NotKeeperHub",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					}
+				],
+				"name": "OwnableInvalidOwner",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "OwnableUnauthorizedAccount",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ZeroAddress",
+				"type": "error"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "keeper",
+						"type": "address"
+					}
+				],
+				"name": "KeeperAdded",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "oldHub",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newHub",
+						"type": "address"
+					}
+				],
+				"name": "KeeperHubSet",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "keeper",
+						"type": "address"
+					}
+				],
+				"name": "KeeperRemoved",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "previousOwner",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferred",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "keeper",
+						"type": "address"
+					}
+				],
+				"name": "addKeeper",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "allKeepers",
+				"outputs": [
+					{
+						"internalType": "address[]",
+						"name": "",
+						"type": "address[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "keeper",
+						"type": "address"
+					}
+				],
+				"name": "isKeeper",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "i",
+						"type": "uint256"
+					}
+				],
+				"name": "keeperAt",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "keeperCount",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "keeperHub",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "keeper",
+						"type": "address"
+					}
+				],
+				"name": "removeKeeper",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "renounceOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "newHub",
+						"type": "address"
+					}
+				],
+				"name": "setKeeperHub",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"errors": {
+				"OwnableInvalidOwner(address)": [
+					{
+						"details": "The owner is not a valid owner account. (eg. `address(0)`)"
+					}
+				],
+				"OwnableUnauthorizedAccount(address)": [
+					{
+						"details": "The caller account is not authorized to perform an operation."
+					}
+				]
+			},
+			"kind": "dev",
+			"methods": {
+				"addKeeper(address)": {
+					"params": {
+						"keeper": "Address of the keeper bot to register."
+					}
+				},
+				"constructor": {
+					"params": {
+						"initialHub": "Initial keeper hub address.",
+						"initialOwner": "Owner of this registry."
+					}
+				},
+				"owner()": {
+					"details": "Returns the address of the current owner."
+				},
+				"removeKeeper(address)": {
+					"params": {
+						"keeper": "Address to deregister."
+					}
+				},
+				"renounceOwnership()": {
+					"details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+				},
+				"setKeeperHub(address)": {
+					"params": {
+						"newHub": "New hub address."
+					}
+				},
+				"transferOwnership(address)": {
+					"details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+				}
+			},
+			"title": "KeeperRegistry",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"addKeeper(address)": {
+					"notice": "Adds an approved keeper."
+				},
+				"allKeepers()": {
+					"notice": "Returns all registered keeper addresses."
+				},
+				"isKeeper(address)": {
+					"notice": "Returns true if `keeper` is registered."
+				},
+				"keeperAt(uint256)": {
+					"notice": "Returns the keeper at index `i` in the enumerable set."
+				},
+				"keeperCount()": {
+					"notice": "Returns the number of registered keepers."
+				},
+				"keeperHub()": {
+					"notice": "The hub address authorised to dispatch keeper actions.         This is typically IBEACore or an automated dispatcher."
+				},
+				"removeKeeper(address)": {
+					"notice": "Removes an approved keeper."
+				},
+				"setKeeperHub(address)": {
+					"notice": "Updates the keeper hub address."
+				}
+			},
+			"notice": "Registry of approved keeper addresses.         Keepers are trusted off-chain bots that may trigger defensive         strategies on behalf of the IBEA system.         The `onlyKeeperHub` modifier is provided for downstream contracts         to restrict critical actions to the registered KeeperHub address.",
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"src/KeeperRegistry.sol": "KeeperRegistry"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"@openzeppelin/contracts/access/Ownable.sol": {
+			"keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6",
+				"dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a"
+			]
+		},
+		"@openzeppelin/contracts/utils/Arrays.sol": {
+			"keccak256": "0xb3b81029526a4c3acf39e57cc446407141ebce338cc99585942af1340e1a69e0",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://3857ce97e8f7a51ad78ea5419b3386e18fcc8af73b65803eedd8193ab7abc9df",
+				"dweb:/ipfs/QmSQi6x2cYsUy76mfMNwuq151bVmh4kAND141kjume51Aq"
+			]
+		},
+		"@openzeppelin/contracts/utils/Comparators.sol": {
+			"keccak256": "0x302eecd8cf323b4690e3494a7d960b3cbce077032ab8ef655b323cdd136cec58",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://49ba706f1bc476d68fe6c1fad75517acea4e9e275be0989b548e292eb3a3eacd",
+				"dweb:/ipfs/QmeBpvcdGWzWMKTQESUCEhHgnEQYYATVwPxLMxa6vMT7jC"
+			]
+		},
+		"@openzeppelin/contracts/utils/Context.sol": {
+			"keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12",
+				"dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF"
+			]
+		},
+		"@openzeppelin/contracts/utils/Panic.sol": {
+			"keccak256": "0xf7fe324703a64fc51702311dc51562d5cb1497734f074e4f483bfb6717572d7a",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://c6a5ff4f9fd8649b7ee20800b7fa387d3465bd77cf20c2d1068cd5c98e1ed57a",
+				"dweb:/ipfs/QmVSaVJf9FXFhdYEYeCEfjMVHrxDh5qL4CGkxdMWpQCrqG"
+			]
+		},
+		"@openzeppelin/contracts/utils/SlotDerivation.sol": {
+			"keccak256": "0x94045fd4f268edf2b2d01ef119268548c320366d6f5294ad30c1b8f9d4f5225f",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://edfda81f426f8948b3834115c21e83c48180e6db0d2a8cd2debb2185ed349337",
+				"dweb:/ipfs/QmdYZneFyDAux1BuWQxLAdqtABrGS2k9WYCa7C9dvpKkWv"
+			]
+		},
+		"@openzeppelin/contracts/utils/StorageSlot.sol": {
+			"keccak256": "0xcf74f855663ce2ae00ed8352666b7935f6cddea2932fdf2c3ecd30a9b1cd0e97",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://9f660b1f351b757dfe01438e59888f31f33ded3afcf5cb5b0d9bf9aa6f320a8b",
+				"dweb:/ipfs/QmarDJ5hZEgBtCmmrVzEZWjub9769eD686jmzb2XpSU1cM"
+			]
+		},
+		"@openzeppelin/contracts/utils/math/Math.sol": {
+			"keccak256": "0x59973a93b1f983f94e10529f46ca46544a9fec2b5f56fb1390bbe9e0dc79f857",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://c55ef8f0b9719790c2ae6f81d80a59ffb89f2f0abe6bc065585bd79edce058c5",
+				"dweb:/ipfs/QmNNmCbX9NjPXKqHJN8R1WC2rNeZSQrPZLd6FF6AKLyH5Y"
+			]
+		},
+		"@openzeppelin/contracts/utils/math/SafeCast.sol": {
+			"keccak256": "0xc8cae21c9ae4a46e5162ff9bf5b351d6fa6a6eba72d515f3bc1bdfeda7fdf083",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://ce830ebcf28e31643caba318996db3763c36d52cd0f23798ba83c135355d45e9",
+				"dweb:/ipfs/QmdGPcvptHN7UBCbUYBbRX3hiRVRFLRwno8b4uga6uFNif"
+			]
+		},
+		"@openzeppelin/contracts/utils/structs/EnumerableSet.sol": {
+			"keccak256": "0x5c298e834696707e274a71a224969d36faecd928a8076603210d67d091adb4ae",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://a93fe967b4d55b31157164cbb7e3e1ebaf3535fc1d3f8d0156da7abb9b565d90",
+				"dweb:/ipfs/QmXH7nyxwEUeMPFDDmkdUwqxLEcezaSmVyunyMAuck1WqR"
+			]
+		},
+		"src/KeeperRegistry.sol": {
+			"keccak256": "0x136e4c9b6aafbc6ec9cc3dc7553ee7f8e8d4addfe9e55baeb12e757d2a0fdc8b",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://066cdc94125d16a66d8f26dc3423727610432fb07093c7c51922cdd2bdbe28e5",
+				"dweb:/ipfs/QmVxt7tTfGGnVrKgyk4ZScdsWiLajDHRx5bYYuP5MbSYBw"
+			]
+		}
+	},
+	"version": 1
+}

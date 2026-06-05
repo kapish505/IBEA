@@ -1,0 +1,162 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "asset",
+						"type": "address"
+					}
+				],
+				"name": "getPrice",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "price",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "asset",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "lookbackSeconds",
+						"type": "uint256"
+					}
+				],
+				"name": "getTWAP",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "twapPrice",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"title": "IMinimalOracle",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"getPrice(address)": {
+					"notice": "Returns the latest price for an asset, WAD-scaled (1e18)."
+				},
+				"getTWAP(address,uint256)": {
+					"notice": "Returns the time-weighted average price over a lookback window, WAD-scaled."
+				}
+			},
+			"notice": "Minimal interface for the price oracle used by ODIGGuard.         Compatible with Chainlink-style oracles and simple price feeds.",
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"src/ODIGGuard.sol": "IMinimalOracle"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"@openzeppelin/contracts/access/Ownable.sol": {
+			"keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6",
+				"dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a"
+			]
+		},
+		"@openzeppelin/contracts/access/Ownable2Step.sol": {
+			"keccak256": "0xdcad8898fda432696597752e8ec361b87d85c82cb258115427af006dacf7128c",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://e2c9d517f0c136d54bd00cd57959d25681d4d6273f5bbbc263afe228303772f0",
+				"dweb:/ipfs/QmReNFjXBiufByiAAzfSQ2SM5r3qeUErn46BmN3yVRvrek"
+			]
+		},
+		"@openzeppelin/contracts/utils/Context.sol": {
+			"keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12",
+				"dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF"
+			]
+		},
+		"@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
+			"keccak256": "0xa516cbf1c7d15d3517c2d668601ce016c54395bf5171918a14e2686977465f53",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://1e1d079e8edfb58efd23a311e315a4807b01b5d1cf153f8fa2d0608b9dec3e99",
+				"dweb:/ipfs/QmTBExeX2SDTkn5xbk5ssbYSx7VqRp9H4Ux1CY4uQM4b9N"
+			]
+		},
+		"@openzeppelin/contracts/utils/StorageSlot.sol": {
+			"keccak256": "0xcf74f855663ce2ae00ed8352666b7935f6cddea2932fdf2c3ecd30a9b1cd0e97",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://9f660b1f351b757dfe01438e59888f31f33ded3afcf5cb5b0d9bf9aa6f320a8b",
+				"dweb:/ipfs/QmarDJ5hZEgBtCmmrVzEZWjub9769eD686jmzb2XpSU1cM"
+			]
+		},
+		"src/ODIGGuard.sol": {
+			"keccak256": "0x68ef879e9b3db2fd8322dad3be1441829d081ff3d123e19ba13e1a438e001922",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://2cedd0851c5c908a16be8f06903cae8e9508af5b6cbb2da43f551143a113d3d9",
+				"dweb:/ipfs/QmPKN9BjFBCsaS7ztgmCb3ZybMSbPEGer3vcX51gzzBaG8"
+			]
+		},
+		"src/interfaces/IODIGGuard.sol": {
+			"keccak256": "0xf8952f74caff6e36395bd8a1b74882c165c5b3bbe26be1682bbc6394c99b6c30",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://9ffee60fa26510e507614f6fe642c0af306d20457f87743e3f38fba22bc0fde3",
+				"dweb:/ipfs/QmYuZqCsxPVqAz1c7iVph852F1nTs5t2q9vrJDZc3L1y9G"
+			]
+		},
+		"src/interfaces/ISafeHarborRegistry.sol": {
+			"keccak256": "0xc54a80e3084bc2b1cfd761235b03cf592ea42a189a8b0a8fed5195b04b7be778",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://b956df4043a18d660908856bfe02f70e21091ae4afdc126838a7af8dad8f3c8b",
+				"dweb:/ipfs/QmQprHUNBwzt1sYjMh7KND92XfQeo7sdmp98xRaJvmxUPf"
+			]
+		},
+		"src/libraries/ThreatMath.sol": {
+			"keccak256": "0x3e38d84efb651814ee17cf044091b97eacf0701d2a3a37e0c5936f321fbb3fef",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://5628cd4fce23c8607d5d7e504e2adf36044d42a2378b2e954c716383c49d4893",
+				"dweb:/ipfs/QmbvtjVW9eL1YpWcYQK8fisV1QJYNTr361qResb864erck"
+			]
+		}
+	},
+	"version": 1
+}

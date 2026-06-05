@@ -1,0 +1,470 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "initialOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "jsonApiAgent",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "websiteParseAgent",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "llmInferenceAgent",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint8",
+						"name": "slot",
+						"type": "uint8"
+					}
+				],
+				"name": "InvalidAgentSlot",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint8",
+						"name": "value",
+						"type": "uint8"
+					}
+				],
+				"name": "InvalidStrategyEnum",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "NoAgentsResponded",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					}
+				],
+				"name": "OwnableInvalidOwner",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "OwnableUnauthorizedAccount",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ZeroAddress",
+				"type": "error"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint8",
+						"name": "slot",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "agent",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "bytes",
+						"name": "reason",
+						"type": "bytes"
+					}
+				],
+				"name": "AgentCallFailed",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint8",
+						"name": "slot",
+						"type": "uint8"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "oldAgent",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newAgent",
+						"type": "address"
+					}
+				],
+				"name": "AgentUpdated",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "protocolId",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "threatScore",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "strategyEnum",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "targetChainId",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"name": "BurstExecuted",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "previousOwner",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferred",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "MAX_STRATEGY",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "NUM_AGENTS",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "agents",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "protocolId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "targetChainId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "agentPayload",
+						"type": "bytes"
+					}
+				],
+				"name": "burst",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "protocolId",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint8",
+								"name": "threatScore",
+								"type": "uint8"
+							},
+							{
+								"internalType": "uint8",
+								"name": "strategyEnum",
+								"type": "uint8"
+							},
+							{
+								"internalType": "uint256",
+								"name": "targetChainId",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct SemanticBurstEngine.BurstResult",
+						"name": "result",
+						"type": "tuple"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "renounceOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint8",
+						"name": "slot",
+						"type": "uint8"
+					},
+					{
+						"internalType": "address",
+						"name": "newAgent",
+						"type": "address"
+					}
+				],
+				"name": "setAgent",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"details": "Agent addresses are injected via constructor and may be updated by owner.      No arbitrary calldata is returned — only the BurstResult struct.",
+			"errors": {
+				"OwnableInvalidOwner(address)": [
+					{
+						"details": "The owner is not a valid owner account. (eg. `address(0)`)"
+					}
+				],
+				"OwnableUnauthorizedAccount(address)": [
+					{
+						"details": "The caller account is not authorized to perform an operation."
+					}
+				]
+			},
+			"kind": "dev",
+			"methods": {
+				"burst(uint256,uint256,bytes)": {
+					"params": {
+						"agentPayload": "ABI-encoded payload forwarded to each agent's `invoke` function.",
+						"protocolId": "Identifier of the protocol to analyse.",
+						"targetChainId": "Chain ID for the defensive strategy."
+					},
+					"returns": {
+						"result": "      Bounded BurstResult struct."
+					}
+				},
+				"constructor": {
+					"params": {
+						"initialOwner": "Owner address.",
+						"jsonApiAgent": "Address of the Somnia JSON API agent.",
+						"llmInferenceAgent": "Address of the Somnia LLM inference agent.",
+						"websiteParseAgent": "Address of the Somnia website parse agent."
+					}
+				},
+				"owner()": {
+					"details": "Returns the address of the current owner."
+				},
+				"renounceOwnership()": {
+					"details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+				},
+				"setAgent(uint8,address)": {
+					"params": {
+						"newAgent": "New agent address.",
+						"slot": "Agent slot index (0, 1, or 2)."
+					}
+				},
+				"transferOwnership(address)": {
+					"details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+				}
+			},
+			"title": "SemanticBurstEngine",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"agents(uint256)": {
+					"notice": "The three Somnia agent contract addresses.         Slot 0: JSON API Agent         Slot 1: Website Parse Agent         Slot 2: LLM Inference Agent"
+				},
+				"burst(uint256,uint256,bytes)": {
+					"notice": "Invokes all three Somnia agents and returns a bounded consensus result."
+				},
+				"setAgent(uint8,address)": {
+					"notice": "Updates a specific agent slot."
+				}
+			},
+			"notice": "Orchestrates calls to 3 Somnia native agent contracts and returns a         bounded, validated analysis result.         The engine:         1. Calls all three agents in sequence with a shared payload.         2. Aggregates the results into a single bounded output struct.         3. Validates all enum fields are within defined ranges.         4. Selects the consensus strategyEnum by majority vote.         5. Selects the highest threatScore as the aggregate threat.         Strategy enum values:           0 = PAUSE_ONLY           1 = PARTIAL_EXIT           2 = SAFE_HARBOR_ESCAPE           3 = HEDGE_AND_THROTTLE",
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"src/SemanticBurstEngine.sol": "SemanticBurstEngine"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"@openzeppelin/contracts/access/Ownable.sol": {
+			"keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6",
+				"dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a"
+			]
+		},
+		"@openzeppelin/contracts/utils/Context.sol": {
+			"keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12",
+				"dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF"
+			]
+		},
+		"src/SemanticBurstEngine.sol": {
+			"keccak256": "0xc920a408853cf5a13ee01dde2b7e107734eacde11a1a9a30bdef76e91501a66a",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://b9ba0b3762a5e1bea3d6985cd2b3ed655c0fce9c5383d8b3c33a0ee13ac6c6dc",
+				"dweb:/ipfs/QmeA93hwP1HaTbGdb6A91JYThACiKBrKjRUgNQVZMvtvGp"
+			]
+		},
+		"src/interfaces/ISomniaAgent.sol": {
+			"keccak256": "0xb6d7b9bce4b4aeb6999dc22dbfe94fd682de8dd530fe90d1bbf23ea311dc0795",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://680a070bca116d67ebcecc5b870d066781167327b771c72b3a4a1fe4609358bf",
+				"dweb:/ipfs/QmSKeUC1SoMBPm9wFuWzGL8VvucQmKKjwLcKPUVcwLFuvh"
+			]
+		},
+		"src/libraries/ThreatMath.sol": {
+			"keccak256": "0x3e38d84efb651814ee17cf044091b97eacf0701d2a3a37e0c5936f321fbb3fef",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://5628cd4fce23c8607d5d7e504e2adf36044d42a2378b2e954c716383c49d4893",
+				"dweb:/ipfs/QmbvtjVW9eL1YpWcYQK8fisV1QJYNTr361qResb864erck"
+			]
+		}
+	},
+	"version": 1
+}

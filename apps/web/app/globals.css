@@ -1,0 +1,318 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600;700&family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Satoshi (self-hosted from CDN) ─── */
+@font-face {
+  font-family: 'Satoshi';
+  src: url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');
+  font-display: swap;
+}
+
+/* ─── Design Tokens ─── */
+:root {
+  /* Surfaces */
+  --base-0: #050505;
+  --base-1: #0d0d0d;
+  --base-2: #111111;
+  --base-3: #161616;
+  --border: #1c1c1c;
+  --border-subtle: #141414;
+
+  /* Semantic state */
+  --safe: #2d6a4f;
+  --safe-text: #6ee7b7;
+  --elevated: #92400e;
+  --elevated-text: #fcd34d;
+  --critical: #7f1d1d;
+  --critical-text: #fca5a5;
+  --semantic: #1e3a5f;
+  --semantic-text: #93c5fd;
+  --infra: #1c1c1c;
+  --infra-text: #9ca3af;
+
+  /* Text hierarchy */
+  --text-primary: #f5f5f5;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #525252;
+  --text-quaternary: #2a2a2a;
+
+  /* Motion */
+  --spring-stiff: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-default: cubic-bezier(0.43, 0.195, 0.02, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Spacing scale */
+  --panel-gap: 1px;
+}
+
+/* ─── Base Reset ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+body {
+  background-color: var(--base-0);
+  color: var(--text-primary);
+  font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* ─── Selection ─── */
+::selection {
+  background: rgba(147, 197, 253, 0.2);
+  color: var(--semantic-text);
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--base-1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2a2a2a;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--base-1);
+}
+
+/* ─── Typography Classes ─── */
+.font-mono-data {
+  font-family: 'Geist Mono', monospace;
+  font-feature-settings: "tnum", "zero";
+  letter-spacing: -0.01em;
+}
+
+.font-display-heading {
+  font-family: 'Satoshi', 'Inter Tight', sans-serif;
+  letter-spacing: -0.03em;
+}
+
+.text-label {
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.text-value {
+  font-family: 'Geist Mono', monospace;
+  font-feature-settings: "tnum";
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* ─── Panel Primitives ─── */
+.panel {
+  background: var(--base-1);
+  border: 1px solid var(--border);
+}
+
+.panel-elevated {
+  background: var(--base-2);
+  border: 1px solid var(--border);
+}
+
+.panel-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ─── State Chips ─── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.chip-nominal {
+  background: rgba(45, 106, 79, 0.15);
+  color: var(--safe-text);
+  border: 1px solid rgba(45, 106, 79, 0.3);
+}
+
+.chip-elevated {
+  background: rgba(146, 64, 14, 0.15);
+  color: var(--elevated-text);
+  border: 1px solid rgba(146, 64, 14, 0.3);
+}
+
+.chip-critical {
+  background: rgba(127, 29, 29, 0.2);
+  color: var(--critical-text);
+  border: 1px solid rgba(127, 29, 29, 0.4);
+}
+
+.chip-semantic {
+  background: rgba(30, 58, 95, 0.25);
+  color: var(--semantic-text);
+  border: 1px solid rgba(30, 58, 95, 0.5);
+}
+
+/* ─── Data Table ─── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.data-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background: var(--base-2);
+}
+
+/* ─── Terminal Cursor Blink ─── */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cursor-blink::after {
+  content: '|';
+  animation: cursor-blink 1.2s step-end infinite;
+  color: var(--safe-text);
+  margin-left: 2px;
+}
+
+/* ─── Node Pulse Animations ─── */
+@keyframes node-pulse-safe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(110, 231, 183, 0); }
+  50% { box-shadow: 0 0 0 4px rgba(110, 231, 183, 0.1); }
+}
+
+@keyframes node-pulse-critical {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(252, 165, 165, 0); }
+  50% { box-shadow: 0 0 0 6px rgba(252, 165, 165, 0.12); }
+}
+
+.node-safe {
+  animation: node-pulse-safe 3s ease-in-out infinite;
+}
+
+.node-critical {
+  animation: node-pulse-critical 1.5s ease-in-out infinite;
+}
+
+/* ─── Line Graph Gradient ─── */
+.recharts-area-area {
+  fill-opacity: 0.15 !important;
+}
+
+/* ─── Focus Ring ─── */
+:focus-visible {
+  outline: 1px solid rgba(147, 197, 253, 0.6);
+  outline-offset: 2px;
+}
+
+/* ─── Divider ─── */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+/* ─── Monospace Address ─── */
+.address {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+/* ─── Empty State ─── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 24px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-family: 'Inter Tight', sans-serif;
+}
+
+.empty-state-label {
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 12px;
+  color: var(--text-quaternary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ─── Semantic Burst Overlay ─── */
+.semantic-burst-backdrop {
+  background: rgba(5, 5, 5, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ─── Gradient Accents (earned, minimal) ─── */
+.gradient-safe {
+  background: linear-gradient(135deg, rgba(45, 106, 79, 0.08) 0%, transparent 60%);
+}
+
+.gradient-critical {
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.1) 0%, transparent 60%);
+}
+
+.gradient-semantic {
+  background: linear-gradient(135deg, rgba(30, 58, 95, 0.1) 0%, transparent 60%);
+}

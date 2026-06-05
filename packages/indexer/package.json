@@ -1,0 +1,20 @@
+{
+  "name": "@ibea/indexer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "ponder dev",
+    "start": "ponder start",
+    "codegen": "ponder codegen"
+  },
+  "dependencies": {
+    "@ibea/shared": "workspace:*",
+    "@ponder/core": "^0.7.17",
+    "hono": "^4.12.23",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

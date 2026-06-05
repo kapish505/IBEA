@@ -1,0 +1,20 @@
+{
+  "lib@5.1.0/openzeppelin-contracts/contracts/access/Ownable2Step.sol": ".deps/npm/lib@5.1.0/openzeppelin-contracts/contracts/access/Ownable2Step.sol",
+  "@openzeppelin/contracts@5.6.1/access/Ownable2Step.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/access/Ownable2Step.sol",
+  "@openzeppelin/contracts@5.6.1/access/Ownable.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/access/Ownable.sol",
+  "@openzeppelin/contracts@5.6.1/utils/Context.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/utils/Context.sol",
+  "@openzeppelin/contracts@5.6.1/utils/ReentrancyGuard.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/utils/ReentrancyGuard.sol",
+  "@openzeppelin/contracts@5.6.1/utils/StorageSlot.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/utils/StorageSlot.sol",
+  "@openzeppelin/contracts@5.6.1/utils/Pausable.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/utils/Pausable.sol",
+  "forge-std@1.1.2/Script.sol": ".deps/npm/forge-std@1.1.2/Script.sol",
+  "forge-std@1.1.2/Vm.sol": ".deps/npm/forge-std@1.1.2/Vm.sol",
+  "forge-std@1.1.2/console.sol": ".deps/npm/forge-std@1.1.2/console.sol",
+  "forge-std@1.1.2/console2.sol": ".deps/npm/forge-std@1.1.2/console2.sol",
+  "@openzeppelin/contracts@5.6.1/utils/Arrays.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/utils/Arrays.sol",
+  "@openzeppelin/contracts@5.6.1/utils/Comparators.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/utils/Comparators.sol",
+  "@openzeppelin/contracts@5.6.1/utils/SlotDerivation.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/utils/SlotDerivation.sol",
+  "@openzeppelin/contracts@5.6.1/utils/math/Math.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/utils/math/Math.sol",
+  "@openzeppelin/contracts@5.6.1/utils/Panic.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/utils/Panic.sol",
+  "@openzeppelin/contracts@5.6.1/utils/math/SafeCast.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/utils/math/SafeCast.sol",
+  "@openzeppelin/contracts@5.6.1/utils/structs/EnumerableSet.sol": ".deps/npm/@openzeppelin/contracts@5.6.1/utils/structs/EnumerableSet.sol"
+}

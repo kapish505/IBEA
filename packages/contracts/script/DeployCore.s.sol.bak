@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import "forge-std/Script.sol";
+import "../src/IBEACore.sol";
+import "../src/EscalationGate.sol";
+import "../src/ThreatVectorMatrix.sol";
+import "../src/SemanticBurstEngine.sol";
+import "../src/KeeperRegistry.sol";
+import "../src/SafeHarborRegistry.sol";
+import "../src/ODIGGuard.sol";
+
+contract DeployCore is Script {
+    function run() external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address deployerAddress = vm.addr(deployerPrivateKey);
+
+        address jsonAgent = vm.envAddress("SOMNIA_JSON_API_AGENT_ADDRESS");
+        address parseAgent = vm.envAddress("SOMNIA_WEBSITE_PARSE_AGENT_ADDRESS");
+        address llmAgent = vm.envAddress("SOMNIA_LLM_INFERENCE_AGENT_ADDRESS");
+
+        vm.startBroadcast(deployerPrivateKey);
+
+        KeeperRegistry keeperRegistry = new KeeperRegistry();
+        SafeHarborRegistry safeHarborRegistry = new SafeHarborRegistry();
+
+        ThreatVectorMatrix threatVectorMatrix = new ThreatVectorMatrix();
+        SemanticBurstEngine semanticBurstEngine = new SemanticBurstEngine(jsonAgent, parseAgent, llmAgent);
+        
+        EscalationGate escalationGate = new EscalationGate();
+
+        IBEACore core = new IBEACore(
+            address(escalationGate),
+            address(semanticBurstEngine),
+            address(threatVectorMatrix)
+        );
+
+        ODIGGuard odigGuard = new ODIGGuard(
+            address(core),
+            address(safeHarborRegistry),
+            address(keeperRegistry)
+        );
+
+        escalationGate.setCore(address(core));
+        threatVectorMatrix.setCore(address(core));
+        semanticBurstEngine.setCore(address(core));
+
+        vm.stopBroadcast();
+    }
+}

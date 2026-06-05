@@ -1,0 +1,26 @@
+{
+  "name": "@ibea/contracts",
+  "version": "0.1.0",
+  "description": "IBEA Invariant-Bounded Escalation Architecture — Solidity smart contracts for Somnia Network",
+  "private": true,
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test --verbosity 2",
+    "test:verbose": "forge test --verbosity 4",
+    "clean": "forge clean",
+    "fmt": "forge fmt",
+    "coverage": "forge coverage",
+    "deploy:core": "forge script script/DeployCore.s.sol --rpc-url somnia_shannon --broadcast --verify",
+    "deploy:safeharbor": "forge script script/DeploySafeHarbor.s.sol --rpc-url somnia_shannon --broadcast --verify",
+    "install:deps": "forge install OpenZeppelin/openzeppelin-contracts --no-commit"
+  },
+  "keywords": [
+    "ibea",
+    "somnia",
+    "defi",
+    "security",
+    "invariant",
+    "solidity"
+  ],
+  "license": "MIT"
+}
