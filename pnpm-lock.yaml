@@ -26,9 +26,6 @@ importers:
       '@hono/node-server':
         specifier: ^1.13.7
         version: 1.19.14(hono@4.12.23)
-      '@ibea/keeper':
-        specifier: workspace:^
-        version: link:../../packages/keeper
       '@ibea/lifi':
         specifier: workspace:^
         version: link:../../packages/lifi
@@ -196,12 +193,6 @@ importers:
       typescript:
         specifier: ^5.6.0
         version: 5.9.3
-
-  packages/keeper:
-    dependencies:
-      viem:
-        specifier: ^2.23.2
-        version: 2.52.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@4.4.3)
 
   packages/lifi:
     dependencies:
