@@ -17,9 +17,9 @@ export async function triggerPredictiveEnrichment(): Promise<void> {
     console.log('[predictive] Escalation triggered — dispatching Website Parse Agent for predictive enrichment...');
 
     for (const url of PREDICTIVE_FEEDS) {
-      await publishArchLog(`[Predictive] Escalation enrichment: dispatching ${url} to Website Parse Agent`, 'PENDING', 'LAYER_5');
+      await publishArchLog(`[Predictive] Escalation enrichment: dispatching ${url} to Website Parse Agent`, 'PENDING', 'LAYER_4');
       await submitWebsiteParseRequest(url, config.SOMNIA_CHAIN_ID);
-      await publishArchLog(`[Predictive] Dispatched to Parse Agent. Awaiting LLM pipeline callback...`, 'SUCCESS', 'LAYER_5');
+      await publishArchLog(`[Predictive] Dispatched to Parse Agent. Awaiting LLM pipeline callback...`, 'SUCCESS', 'LAYER_4');
     }
   } catch (err) {
     console.error('[predictive] Enrichment error:', err);

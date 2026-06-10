@@ -395,7 +395,7 @@ export async function startSomniaSubscriber(): Promise<() => void> {
                 try {
                    const urlMatch = taskDataStr.match(/URL:\s*(http[^\n]+)/);
                    if (urlMatch) {
-                      const res = await fetch(urlMatch[1].trim());
+                      const res = await fetch(urlMatch[1]!.trim());
                       const json = await res.json() as any;
                       let val = json?.args?.deviation || json?.deviation || "100";
                       numericValue = Math.floor(Number(val) * 100);

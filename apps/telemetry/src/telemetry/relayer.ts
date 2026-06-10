@@ -196,7 +196,7 @@ export async function startRelayer(): Promise<() => void> {
         });
         
         // Let it run in background to not block relayer loop
-        publicClient.waitForTransactionReceipt({ hash: executedTxHash }).then(async (receipt) => {
+        publicClient.waitForTransactionReceipt({ hash: executedTxHash as `0x${string}` }).then(async (receipt) => {
           if (receipt.status === 'success') {
             await redisPub.publish(
               'ibea:events',
