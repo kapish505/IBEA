@@ -44,9 +44,10 @@ async function checkAndUnfreeze() {
     if (isFrozen) {
       console.log(`[Unfreezer] 🧊 Contract is frozen! Unfreezing...`);
       const hash = await walletClient.writeContract({
-        address: ODIG_GUARD_ADDRESS,
+        address: ODIG_GUARD_ADDRESS as `0x${string}`,
         abi: ABI,
         functionName: 'liftFreeze',
+        chain: undefined as any,
       });
       console.log(`[Unfreezer] 🔥 Unfreeze tx sent: ${hash}`);
       await publicClient.waitForTransactionReceipt({ hash });
