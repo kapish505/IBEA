@@ -1,6 +1,6 @@
 import { config } from '../config.js';
 import { redisSub, redisPub } from '../ws/broadcast.js';
-import { createPublicClient, http, pad } from 'viem';
+import { createPublicClient, http } from 'viem';
 import { fetchLifiRoute } from '@ibea/lifi';
 import { submitKeeperExecution } from './onchain-dispatcher.js';
 // Minimal ABI to call triggerStrategy on IBEACore
@@ -98,8 +98,13 @@ export async function startRelayer(): Promise<() => void> {
         // 1. Generate execution calldata for IBEA_CORE
         const targetProtocolId = 0n;
         
+        // IMPORTANT: Always use strategy 0 (PAUSE_ONLY) for on-chain execution.
+        // The LI.FI diamond (0x1231DEB6...) has NO bytecode on Somnia testnet,
+        // so ODIGGuard.executeDefensiveStrategy will always fail at the
+        // lifiDiamond.call() step, causing "LiFiRouteFailed" → emergency freeze.
+        // Strategy 0 skips ODIGGuard entirely and just emits StrategyTriggered.
         const argsForKeeper: any[] = [
-          strategyEnum || 2,
+          0, // PAUSE_ONLY — avoids ODIGGuard LiFi execution
           targetProtocolId,
           '0x0000000000000000000000000000000000000000',
           '0x0000000000000000000000000000000000000000',
@@ -141,24 +146,10 @@ export async function startRelayer(): Promise<() => void> {
                })
              );
              
-             const lifiDiamond = route.transactionRequest?.to || '0x0000000000000000000000000000000000000000';
-             let lifiData = route.transactionRequest?.data || '0x';
-             
-             // We inject the SafeHarbor parameters into the real LI.FI payload at the exact offsets ODIGGuard expects,
-             // without destroying the rest of the real payload data, to avoid invariant freezes.
-             if (lifiData.length < 586) {
-               lifiData = lifiData.padEnd(586, '0');
-             }
-
-             const dummyVault = pad(config.IBEA_CORE_ADDRESS as `0x${string}`, { size: 32 }).replace('0x', '');
-             const dummyMinAmount = pad('0x1', { size: 32 }).replace('0x', '');
-             const dummyChainId = pad('0x1', { size: 32 }).replace('0x', '');
-             
-             // Overwrite bytes 192-288 (hex index 394 to 586) with the SafeHarbor constraints
-             lifiData = lifiData.substring(0, 394) + dummyVault + dummyMinAmount + dummyChainId + lifiData.substring(586);
-             
-             argsForKeeper[3] = lifiDiamond;
-             argsForKeeper[4] = lifiData;
+             // LI.FI route data is used for UI display only.
+             // We do NOT pass it to triggerStrategy because strategy 0 (PAUSE_ONLY)
+             // doesn't call ODIGGuard, so lifiDiamond/lifiData are unused on-chain.
+             console.log(`[relayer] LI.FI route fetched for UI display (not executed on-chain). routeId=${lifiRouteId}`);
           }
         } else {
            await publishArchLog(`Target is local network. Generating direct execution calldata (PAUSE_ONLY)...`, 'SUCCESS', 'LAYER_4');
