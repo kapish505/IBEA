@@ -4,7 +4,7 @@
   "description": "IBEA Invariant-Bounded Escalation Architecture — Solidity smart contracts for Somnia Network",
   "private": true,
   "scripts": {
-    "build": "forge build",
+    "compile": "forge build",
     "test": "forge test --verbosity 2",
     "test:verbose": "forge test --verbosity 4",
     "clean": "forge clean",
