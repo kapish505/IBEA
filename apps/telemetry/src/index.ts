@@ -233,6 +233,21 @@ async function main(): Promise<void> {
     `             WebSocket: ws://localhost:${config.PORT}/ws\n` +
     `             Health: http://localhost:${config.PORT}/health`,
   );
+
+  // ─── Self-Ping (Prevent Render Sleep) ───────────────────────────────────────
+  if (process.env.RENDER_EXTERNAL_URL) {
+    const PING_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+    setInterval(() => {
+      const url = `${process.env.RENDER_EXTERNAL_URL}/health`;
+      fetch(url)
+        .then((res) => {
+          if (res.ok) console.log(`[keep-alive] Successfully pinged self at ${url}`);
+          else console.warn(`[keep-alive] Failed to ping self, status: ${res.status}`);
+        })
+        .catch((err) => console.error(`[keep-alive] Error pinging self:`, err));
+    }, PING_INTERVAL_MS);
+    console.log(`[telemetry] Keep-alive scheduled every 10 minutes against ${process.env.RENDER_EXTERNAL_URL}/health`);
+  }
 }
 
 // ─── Graceful shutdown ────────────────────────────────────────────────────────
