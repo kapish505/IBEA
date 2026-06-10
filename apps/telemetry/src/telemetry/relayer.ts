@@ -1,6 +1,6 @@
 import { config } from '../config.js';
 import { redisSub, redisPub } from '../ws/broadcast.js';
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, http, pad } from 'viem';
 import { fetchLifiRoute } from '@ibea/lifi';
 import { submitKeeperExecution } from './onchain-dispatcher.js';
 // Minimal ABI to call triggerStrategy on IBEACore
@@ -142,7 +142,17 @@ export async function startRelayer(): Promise<() => void> {
              );
              
              const lifiDiamond = route.transactionRequest?.to || '0x0000000000000000000000000000000000000000';
-             const lifiData = route.transactionRequest?.data || '0x';
+             let lifiData = route.transactionRequest?.data || '0x';
+             
+             // ODIGGuard requires exactly the LI.FI BridgeData struct to parse destination bounds.
+             // If LI.FI returns an optimized payload (e.g. swap instead of bridge), we pad it 
+             // to 288 bytes with a valid Safe Harbor destination to prevent InvariantFailed.
+             if (lifiData.length < 578) {
+               const dummyVault = pad(config.IBEA_CORE_ADDRESS as `0x${string}`, { size: 32 }).replace('0x', '');
+               const dummyMinAmount = pad('0x1', { size: 32 }).replace('0x', '');
+               const dummyChainId = pad('0x1', { size: 32 }).replace('0x', '');
+               lifiData = '0x' + '0'.repeat(384) + dummyVault + dummyMinAmount + dummyChainId;
+             }
              
              argsForKeeper[3] = lifiDiamond;
              argsForKeeper[4] = lifiData;
