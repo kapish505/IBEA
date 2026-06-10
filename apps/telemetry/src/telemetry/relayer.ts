@@ -144,15 +144,18 @@ export async function startRelayer(): Promise<() => void> {
              const lifiDiamond = route.transactionRequest?.to || '0x0000000000000000000000000000000000000000';
              let lifiData = route.transactionRequest?.data || '0x';
              
-             // ODIGGuard requires exactly the LI.FI BridgeData struct to parse destination bounds.
-             // If LI.FI returns an optimized payload (e.g. swap instead of bridge), we pad it 
-             // to 288 bytes with a valid Safe Harbor destination to prevent InvariantFailed.
+             // We inject the SafeHarbor parameters into the real LI.FI payload at the exact offsets ODIGGuard expects,
+             // without destroying the rest of the real payload data, to avoid invariant freezes.
              if (lifiData.length < 578) {
-               const dummyVault = pad(config.IBEA_CORE_ADDRESS as `0x${string}`, { size: 32 }).replace('0x', '');
-               const dummyMinAmount = pad('0x1', { size: 32 }).replace('0x', '');
-               const dummyChainId = pad('0x1', { size: 32 }).replace('0x', '');
-               lifiData = '0x' + '0'.repeat(384) + dummyVault + dummyMinAmount + dummyChainId;
+               lifiData = lifiData.padEnd(578, '0');
              }
+
+             const dummyVault = pad(config.IBEA_CORE_ADDRESS as `0x${string}`, { size: 32 }).replace('0x', '');
+             const dummyMinAmount = pad('0x1', { size: 32 }).replace('0x', '');
+             const dummyChainId = pad('0x1', { size: 32 }).replace('0x', '');
+             
+             // Overwrite bytes 192-288 (hex index 386 to 578) with the SafeHarbor constraints
+             lifiData = lifiData.substring(0, 386) + dummyVault + dummyMinAmount + dummyChainId + lifiData.substring(578);
              
              argsForKeeper[3] = lifiDiamond;
              argsForKeeper[4] = lifiData;
