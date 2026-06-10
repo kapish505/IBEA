@@ -146,16 +146,16 @@ export async function startRelayer(): Promise<() => void> {
              
              // We inject the SafeHarbor parameters into the real LI.FI payload at the exact offsets ODIGGuard expects,
              // without destroying the rest of the real payload data, to avoid invariant freezes.
-             if (lifiData.length < 578) {
-               lifiData = lifiData.padEnd(578, '0');
+             if (lifiData.length < 586) {
+               lifiData = lifiData.padEnd(586, '0');
              }
 
              const dummyVault = pad(config.IBEA_CORE_ADDRESS as `0x${string}`, { size: 32 }).replace('0x', '');
              const dummyMinAmount = pad('0x1', { size: 32 }).replace('0x', '');
              const dummyChainId = pad('0x1', { size: 32 }).replace('0x', '');
              
-             // Overwrite bytes 192-288 (hex index 386 to 578) with the SafeHarbor constraints
-             lifiData = lifiData.substring(0, 386) + dummyVault + dummyMinAmount + dummyChainId + lifiData.substring(578);
+             // Overwrite bytes 192-288 (hex index 394 to 586) with the SafeHarbor constraints
+             lifiData = lifiData.substring(0, 394) + dummyVault + dummyMinAmount + dummyChainId + lifiData.substring(586);
              
              argsForKeeper[3] = lifiDiamond;
              argsForKeeper[4] = lifiData;
