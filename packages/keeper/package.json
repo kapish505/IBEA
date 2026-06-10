@@ -1,9 +1,0 @@
-{
-  "name": "@ibea/keeper",
-  "version": "1.0.0",
-  "private": true,
-  "main": "src/index.ts",
-  "dependencies": {
-    "viem": "^2.23.2"
-  }
-}

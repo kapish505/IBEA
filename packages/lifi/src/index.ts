@@ -9,12 +9,13 @@ export interface CrossChainPayload {
 
 export async function fetchLifiRoute(payload: CrossChainPayload) {
   try {
-    // We are originating from Somnia (Chain ID: 50312)
+    // We simulate from Polygon (137) to get a REAL LI.FI cross-chain route payload
+    // since Somnia Testnet (50312) is not natively supported by the LI.FI API yet.
     const quote = await getQuote({
-      fromChain: 50312, 
-      toChain: payload.targetChainId,
-      fromToken: '0x0000000000000000000000000000000000000000', // native STT
-      toToken: payload.targetAsset,
+      fromChain: 137, 
+      toChain: payload.targetChainId === 50312 ? 1 : payload.targetChainId, // route to Eth if target is somnia
+      fromToken: '0x0000000000000000000000000000000000000000', // native MATIC
+      toToken: '0x0000000000000000000000000000000000000000', // native ETH (or native on target chain)
       fromAmount: payload.amount,
       fromAddress: payload.userAddress,
     });

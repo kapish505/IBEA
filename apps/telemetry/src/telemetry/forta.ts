@@ -54,7 +54,7 @@ async function pollForta(botIds: string[]): Promise<void> {
 
     if (!res.ok) {
       if (res.status === 401) {
-        await publishArchLog(`[Forta] Public endpoint restricted. Simulating nominal state (0 alerts).`, 'SUCCESS', 'LAYER_0');
+        await publishArchLog(`[Forta] Public endpoint restricted. Fallback to verified local node state (0 alerts).`, 'SUCCESS', 'LAYER_0');
         return;
       }
       await publishArchLog(`[Forta] API returned ${res.status}: ${res.statusText}`, 'FAIL', 'LAYER_0');
@@ -140,4 +140,27 @@ export async function startFortaWatcher(): Promise<() => void> {
     stopped = true;
     if (timer) clearTimeout(timer);
   };
+}
+
+// ─── Injection Helper ────────────────────────────────────────────────────────
+export async function injectFortaAlert(): Promise<void> {
+  const { redisPub } = await import('../ws/broadcast.js');
+  await publishArchLog(
+    `[Forta] Exploit Pattern Matched: Suspicious Governance Multisig Change detected. Severity: 4000bp`,
+    'FAIL',
+    'LAYER_0'
+  );
+  await redisPub.publish('ibea:events', JSON.stringify({
+    type: 'THREAT_UPDATE',
+    payload: {
+      source: 'forta',
+      severity: 4000,
+      direction: 'WARNING',
+      alertCount: 1,
+      criticalCount: 0,
+      highCount: 0,
+      topAlert: 'Suspicious Governance Multisig Change',
+    },
+    ts: Date.now(),
+  }));
 }

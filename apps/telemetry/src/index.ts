@@ -16,8 +16,15 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+import { cors } from 'hono/cors';
+
 // ─── Hono app ─────────────────────────────────────────────────────────────────
 const app = new Hono();
+
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+}));
 
 // Health endpoint
 app.get('/health', (c) => {
@@ -140,6 +147,28 @@ app.post('/api/settings/auto-escalate', async (c) => {
     return c.json({ enabled: body.enabled });
   }
   return c.json({ error: 'Invalid payload' }, 400);
+});
+
+// ─── Demo Threat Injector API ─────────────────────────────────────────────────
+app.post('/api/inject', async (c) => {
+  const body = await c.req.json();
+  const { redisPub } = await import('./ws/broadcast.js');
+  
+  if (body.type === 'flashloan') {
+    // Fast-Path TVL drain -> use real defillama watcher to simulate crash
+    const { injectDefillamaCrash } = await import('./telemetry/defillama.js');
+    injectDefillamaCrash('aave', body.deviation || 99); // Pass deviation parameter
+    return c.json({ status: 'injected', type: 'flashloan', message: 'Fast-path bypass triggered via native agent' });
+  }
+  
+  if (body.type === 'governance') {
+    // Slow-Path Warning
+    const { injectFortaAlert } = await import('./telemetry/forta.js');
+    await injectFortaAlert();
+    return c.json({ status: 'injected', type: 'governance', message: 'Slow-path warning injected via native agent' });
+  }
+
+  return c.json({ error: 'Unknown threat type' }, 400);
 });
 
 // ─── Initialise DB schema ─────────────────────────────────────────────────────

@@ -603,6 +603,21 @@
 						"internalType": "uint256",
 						"name": "protocolId",
 						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "targetAsset",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "lifiDiamond",
+						"type": "address"
+					},
+					{
+						"internalType": "bytes",
+						"name": "lifiData",
+						"type": "bytes"
 					}
 				],
 				"name": "triggerStrategy",
@@ -693,7 +708,7 @@
 				"pause()": {
 					"notice": "Pause the core (prevents computeRisk and triggerStrategy)."
 				},
-				"triggerStrategy(uint8,uint256)": {
+				"triggerStrategy(uint8,uint256,address,address,bytes)": {
 					"notice": "Keeper-only function to trigger a defensive strategy.         Routes the call to the ODIGGuard module."
 				},
 				"unpause()": {
@@ -769,11 +784,11 @@
 			]
 		},
 		"src/IBEACore.sol": {
-			"keccak256": "0xccf24fef5e61f2e2f3ce95ebe0068579f735d9f02fd6eb0b1fe79b176c950675",
+			"keccak256": "0xa94b3749f325b2e7391f8fb9e02711670fa2ffd573ec107bafce9cab4eae19b3",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://f65d4624a26b3c382efd4d8d91451fd5b85d2710880f873e3b5452f477ab89ee",
-				"dweb:/ipfs/QmcZaHjsUtmp5XR89zzptwTHfdcZHbwCZxqBnfsRw2e9o1"
+				"bzz-raw://29485dcd80c9804f3a97fde432df96e48676be75f14a7e9f843d08437dee9704",
+				"dweb:/ipfs/QmbeKKt8SBdKFgmXvwr5w2HnEhXEmjtYX5NKRZSNZNd38T"
 			]
 		},
 		"src/interfaces/IEscalationGate.sol": {
@@ -785,19 +800,19 @@
 			]
 		},
 		"src/interfaces/IIBEACore.sol": {
-			"keccak256": "0x823b56a46d90d9fbb35be4e95063c66f9fe78f52615a0ea08e271ed275bc51de",
+			"keccak256": "0x190e04c27300a7a9fb2df97248fc95122a3170a0e66ebef7431886aac926e742",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://474ae7286d6db0c8ef0b5496691d2c0e09e8936798e1ed4d19f81d824531b46b",
-				"dweb:/ipfs/QmR537Mr6xkPYGidWXtP7tySnLf7PFdbitjuY7b4xhA11L"
+				"bzz-raw://8091a6d7c1578dabfcdda5d537aa586f4b4d4e6e944d5a9ffa6026cc7eab04ea",
+				"dweb:/ipfs/Qmd6tULf6Vsfvjhxd8Hh6cmnxqs8fQMPKuxy36peZFXnWM"
 			]
 		},
 		"src/interfaces/IODIGGuard.sol": {
-			"keccak256": "0xf8952f74caff6e36395bd8a1b74882c165c5b3bbe26be1682bbc6394c99b6c30",
+			"keccak256": "0xbea45a2907a4d33cc29dc32a64aa290ba935b12aa02e686262102555234237fa",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://9ffee60fa26510e507614f6fe642c0af306d20457f87743e3f38fba22bc0fde3",
-				"dweb:/ipfs/QmYuZqCsxPVqAz1c7iVph852F1nTs5t2q9vrJDZc3L1y9G"
+				"bzz-raw://309d55769c73f650a5967ab1839d29d7be8593af63641e5561d0d0ced2934848",
+				"dweb:/ipfs/QmPCtAqN8UMujhWGFwqXYDX9K5HxWmoa5mLrcWSfgN5mpV"
 			]
 		},
 		"src/interfaces/ISafeHarborRegistry.sol": {

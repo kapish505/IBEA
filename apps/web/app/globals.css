@@ -79,26 +79,11 @@ body {
 
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--base-1);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 2px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #2a2a2a;
+  display: none;
 }
 
 * {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) var(--base-1);
+  scrollbar-width: none;
 }
 
 /* ─── Typography Classes ─── */

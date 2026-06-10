@@ -14,6 +14,49 @@ const somniaChain = {
   },
 } as const;
 
+let nextNonce: number | null = null;
+let nonceLock = false;
+
+async function executeWithNonceRetry(client: any, account: any, simulateFn: (nonce: number) => Promise<any>): Promise<`0x${string}`> {
+  let attempts = 0;
+  while (attempts < 10) {
+    let currentNonce: number;
+    while (nonceLock) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    nonceLock = true;
+    try {
+      let fetchedNonce: number = nextNonce as unknown as number;
+      if (nextNonce === null) {
+        fetchedNonce = await client.getTransactionCount({ address: account.address, blockTag: 'latest' });
+      }
+      currentNonce = fetchedNonce;
+      nextNonce = fetchedNonce + 1;
+    } finally {
+      nonceLock = false;
+    }
+
+    try {
+      const { request } = await simulateFn(currentNonce);
+      const hash = await client.writeContract(request);
+      return hash;
+    } catch (err: any) {
+      const msg = err.message || '';
+      if (msg.toLowerCase().includes('nonce') || msg.toLowerCase().includes('underpriced') || msg.toLowerCase().includes('already known')) {
+        console.warn(`[onchain-dispatcher] Nonce ${currentNonce} issue encountered, retrying... (${attempts + 1}/10)`);
+        attempts++;
+        // If we get an error, another process might have bumped the nonce, so we sync it up loosely.
+        if (attempts === 5) {
+            nextNonce = null; // force a re-fetch halfway through
+        }
+      } else {
+        throw err;
+      }
+    }
+  }
+  throw new Error("Failed to submit transaction after 10 nonce retries.");
+}
+
 // The ABI for the updated SROCoordinator (uses AgentManager.createTask internally)
 const SRO_COORDINATOR_ABI = [
   {
@@ -113,7 +156,7 @@ function buildInferStringTaskData(prompt: string, system: string): string {
   });
 }
 
-export async function submitMetricRequest(url: string, targetChainId: number = 1) {
+export async function submitMetricRequest(url: string, selector: string = '$.data', targetChainId: number = 1) {
   if (!config.RELAYER_PRIVATE_KEY) return;
   const account = privateKeyToAccount(config.RELAYER_PRIVATE_KEY as `0x${string}`);
   const client = createWalletClient({
@@ -125,22 +168,55 @@ export async function submitMetricRequest(url: string, targetChainId: number = 1
   const evidenceHash = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
   // Build task data: fetchString(url, selector)
-  const taskData = buildFetchStringTaskData(url, '$.data');
+  const taskData = buildFetchStringTaskData(url, selector);
 
   // JSON API agent requires 0.12 STT deposit, send 0.15 STT to be safe
   const deposit = BigInt(150000000000000000);
 
-  const { request } = await client.simulateContract({
-    address: config.ESCALATION_GATE_ADDRESS as Address,
-    abi: SRO_COORDINATOR_ABI,
-    functionName: 'requestMetricData',
-    args: [taskData, evidenceHash as `0x${string}`, BigInt(targetChainId)],
-    value: deposit
-  });
+  try {
+    const hash = await executeWithNonceRetry(client, account, async (nonce: number) => {
+      return client.simulateContract({
+        address: config.SRO_COORDINATOR_ADDRESS as Address,
+        abi: SRO_COORDINATOR_ABI,
+        functionName: 'requestMetricData',
+        args: [taskData, evidenceHash as `0x${string}`, BigInt(targetChainId)],
+        value: deposit,
+        nonce
+      });
+    });
 
-  const hash = await client.writeContract(request);
-  console.log(`[onchain-dispatcher] Submitted Metric task to Somnia AgentManager! Tx: ${hash}`);
-  return hash;
+    console.log(`[onchain-dispatcher] Submitted Metric task to Somnia AgentManager! Tx: ${hash}`);
+    const { redisPub } = await import('../ws/broadcast.js');
+    await redisPub.publish('ibea:events', JSON.stringify({
+      type: 'AGENT_RESULT',
+      payload: {
+        taskId: hash,
+        workflow: 'ADM_METRIC',
+        taskData: `Fetch Metric Data\nURL: ${url}\nSelector: ${selector}`,
+        result: `Task Submitted to On-Chain AgentManager.\nTransaction Hash: ${hash}\nAwaiting Native Callback...`,
+        txHash: hash,
+        requestTxHash: hash,
+        timestamp: Date.now()
+      },
+      ts: Date.now()
+    }));
+    return hash;
+  } catch (err) {
+    console.error(`[onchain-dispatcher] Failed to submit Metric task:`, err);
+    // Publish so the user sees it in the Architecture Trace
+    const { redisPub } = await import('../ws/broadcast.js');
+    await redisPub.publish('ibea:events', JSON.stringify({
+      type: 'ARCH_LOG',
+      payload: {
+        id: `arch-fail-${Date.now()}`,
+        layer: 'LAYER_1',
+        message: `Failed to dispatch Somnia Agent! Error: ${(err as Error).message.split('\n')[0]}`,
+        status: 'FAIL',
+        timestamp: Date.now()
+      },
+      ts: Date.now()
+    }));
+  }
 }
 
 export async function submitWebsiteParseRequest(url: string, targetChainId: number = 1) {
@@ -165,16 +241,32 @@ export async function submitWebsiteParseRequest(url: string, targetChainId: numb
   // Website Parse agent requires 0.33 STT deposit, send 0.4 STT to be safe
   const deposit = BigInt(400000000000000000);
 
-  const { request } = await client.simulateContract({
-    address: config.ESCALATION_GATE_ADDRESS as Address,
-    abi: SRO_COORDINATOR_ABI,
-    functionName: 'requestWebsiteParse',
-    args: [taskData, evidenceHash as `0x${string}`, BigInt(targetChainId)],
-    value: deposit
+  const hash = await executeWithNonceRetry(client, account, async (nonce: number) => {
+    return client.simulateContract({
+      address: config.SRO_COORDINATOR_ADDRESS as Address,
+      abi: SRO_COORDINATOR_ABI,
+      functionName: 'requestWebsiteParse',
+      args: [taskData, evidenceHash as `0x${string}`, BigInt(targetChainId)],
+      value: deposit,
+      nonce
+    });
   });
 
-  const hash = await client.writeContract(request);
   console.log(`[onchain-dispatcher] Submitted Website Parse task to Somnia AgentManager! Tx: ${hash}`);
+  const { redisPub } = await import('../ws/broadcast.js');
+  await redisPub.publish('ibea:events', JSON.stringify({
+    type: 'AGENT_RESULT',
+    payload: {
+      taskId: hash,
+      workflow: 'ADM_PREDICTIVE',
+      taskData: `Analyze this page for DeFi security threats, exploits, or suspicious activity\nURL: ${url}`,
+      result: `Task Submitted to On-Chain AgentManager.\nTransaction Hash: ${hash}\nAwaiting Native Callback...`,
+      txHash: hash,
+      requestTxHash: hash,
+      timestamp: Date.now()
+    },
+    ts: Date.now()
+  }));
   return hash;
 }
 
@@ -198,15 +290,118 @@ export async function submitLLMInferenceRequest(prompt: string, targetChainId: n
   // LLM Inference agent requires 0.24 STT deposit, send 0.3 STT to be safe
   const deposit = BigInt(300000000000000000);
 
-  const { request } = await client.simulateContract({
-    address: config.ESCALATION_GATE_ADDRESS as Address,
-    abi: SRO_COORDINATOR_ABI,
-    functionName: 'requestLLMInference',
-    args: [taskData, evidenceHash as `0x${string}`, BigInt(targetChainId)],
-    value: deposit
+  const hash = await executeWithNonceRetry(client, account, async (nonce: number) => {
+    return client.simulateContract({
+      address: config.SRO_COORDINATOR_ADDRESS as Address,
+      abi: SRO_COORDINATOR_ABI,
+      functionName: 'requestLLMInference',
+      args: [taskData, evidenceHash as `0x${string}`, BigInt(targetChainId)],
+      value: deposit,
+      nonce
+    });
   });
 
-  const hash = await client.writeContract(request);
   console.log(`[onchain-dispatcher] Submitted LLM Inference task to Somnia AgentManager! Tx: ${hash}`);
+  const { redisPub } = await import('../ws/broadcast.js');
+  await redisPub.publish('ibea:events', JSON.stringify({
+    type: 'AGENT_RESULT',
+    payload: {
+      taskId: hash,
+      workflow: 'ADM_SEMANTIC',
+      taskData: prompt,
+      result: `Task Submitted to On-Chain AgentManager.\nTransaction Hash: ${hash}\nAwaiting Native Callback...`,
+      txHash: hash,
+      requestTxHash: hash,
+      timestamp: Date.now()
+    },
+    ts: Date.now()
+  }));
+  return hash;
+}
+
+export async function reportMetricResultOnChain(taskId: bigint, metricDeviation: number) {
+  if (!config.RELAYER_PRIVATE_KEY) return;
+  const account = privateKeyToAccount(config.RELAYER_PRIVATE_KEY as `0x${string}`);
+  const client = createWalletClient({
+    account,
+    chain: somniaChain,
+    transport: http(config.SOMNIA_RPC_URL),
+  }).extend(publicActions);
+
+  const hash = await executeWithNonceRetry(client, account, async (nonce: number) => {
+    return client.simulateContract({
+      address: config.SRO_COORDINATOR_ADDRESS as Address,
+      abi: [{
+        type: 'function',
+        name: 'reportMetricResult',
+        inputs: [{ name: 'taskId', type: 'uint256' }, { name: 'metricDeviation', type: 'uint256' }],
+        outputs: [],
+        stateMutability: 'nonpayable',
+      }],
+      functionName: 'reportMetricResult',
+      args: [taskId, BigInt(Math.floor(metricDeviation))],
+      nonce
+    });
+  });
+
+  console.log(`[onchain-dispatcher] Reported metric result for task ${taskId.toString()}! Tx: ${hash}`);
+  return hash;
+}
+
+export async function reportSemanticResultOnChain(taskId: bigint, computedSeverity: number) {
+  if (!config.RELAYER_PRIVATE_KEY) return;
+  const account = privateKeyToAccount(config.RELAYER_PRIVATE_KEY as `0x${string}`);
+  const client = createWalletClient({
+    account,
+    chain: somniaChain,
+    transport: http(config.SOMNIA_RPC_URL),
+  }).extend(publicActions);
+
+  const hash = await executeWithNonceRetry(client, account, async (nonce: number) => {
+    return client.simulateContract({
+      address: config.SRO_COORDINATOR_ADDRESS as Address,
+      abi: [{
+        type: 'function',
+        name: 'reportSemanticResult',
+        inputs: [{ name: 'taskId', type: 'uint256' }, { name: 'computedSeverity', type: 'uint8' }],
+        outputs: [],
+        stateMutability: 'nonpayable',
+      }],
+      functionName: 'reportSemanticResult',
+      args: [taskId, computedSeverity],
+      nonce
+    });
+  });
+
+  console.log(`[onchain-dispatcher] Reported semantic result for task ${taskId.toString()}! Tx: ${hash}`);
+  return hash;
+}
+
+export async function submitKeeperExecution(
+  contractAddress: Address,
+  abi: any,
+  functionName: string,
+  args: any[]
+): Promise<`0x${string}` | undefined> {
+  if (!config.RELAYER_PRIVATE_KEY) return undefined;
+  
+  const account = privateKeyToAccount(config.RELAYER_PRIVATE_KEY as `0x${string}`);
+  const client = createWalletClient({
+    account,
+    chain: somniaChain,
+    transport: http(config.SOMNIA_RPC_URL),
+  }).extend(publicActions);
+
+  const hash = await executeWithNonceRetry(client, account, async (nonce: number) => {
+    return client.simulateContract({
+      address: contractAddress,
+      abi: abi,
+      functionName: functionName,
+      args: args,
+      nonce
+    });
+  });
+
+  console.log(`[onchain-dispatcher] Submitted Custom Keeper execution! Tx: ${hash}`);
   return hash;
 }

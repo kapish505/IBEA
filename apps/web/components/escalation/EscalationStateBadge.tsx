@@ -56,7 +56,18 @@ export function EscalationStateBadge({
   showLabel = true,
 }: EscalationStateBadgeProps) {
   const escalationState = useIBEAStore((s) => s.escalationState)
-  const config = STATE_CONFIG[escalationState]
+  const authorizedAssetCount = useIBEAStore((s) => s.authorizedAssetCount)
+  
+  const isStandby = authorizedAssetCount === 0;
+  
+  const config = isStandby 
+    ? {
+        label: 'STANDBY (UNAUTHORIZED)',
+        chipClass: 'chip-nominal',
+        dotClass: 'bg-neutral-500',
+        pulse: false,
+      }
+    : STATE_CONFIG[escalationState]
 
   return (
     <AnimatePresence mode="wait">

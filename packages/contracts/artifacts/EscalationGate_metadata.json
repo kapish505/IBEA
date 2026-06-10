@@ -541,9 +541,6 @@
 				"_epochLastDecay": {
 					"details": "epoch => last decay block"
 				},
-				"_epochSubmissionCount": {
-					"details": "Counts distinct submitters for an epoch using weight-sum heuristic.      Since each source has weight >= 1 and we track total weight sum,      we cannot simply divide (weights vary). We use a separate counter pattern      by storing submission count in the upper bits of _epochWeightSum.      For correctness, we use a dedicated mapping."
-				},
 				"_epochWeightSum": {
 					"details": "epoch => weighted submission count"
 				},
@@ -555,6 +552,9 @@
 				},
 				"_submitted": {
 					"details": "epoch => source => has submitted"
+				},
+				"_uniqueSubmittersCount": {
+					"details": "Tracks number of unique submitters per epoch."
 				}
 			},
 			"title": "EscalationGate",
@@ -610,11 +610,11 @@
 			]
 		},
 		"src/EscalationGate.sol": {
-			"keccak256": "0x407ddbc528848c8dcb0a69c8856d9032e02049efdcd76e68802bf81d99877843",
+			"keccak256": "0x727f704d85506e0407861d491e8731590646385b8898607191546f5f4667599d",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://56376ce2712053befce24f37e825caca8402f5b01823bb3b0475e919fe6f3c80",
-				"dweb:/ipfs/QmP4cijA6ZFLuYa59gVQqSSWbYo3tR9LS9mF728K5djjoL"
+				"bzz-raw://1d5c1534c4fe875042b9f4de07a3ddb4adf968a5945d7912262c19365ddae250",
+				"dweb:/ipfs/QmexnPtwnNuwPMXaA4QsjvJRtYkwhhExW6m8hn1BcPU6au"
 			]
 		},
 		"src/interfaces/IEscalationGate.sol": {

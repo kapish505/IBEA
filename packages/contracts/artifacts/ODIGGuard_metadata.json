@@ -268,6 +268,25 @@
 					{
 						"indexed": true,
 						"internalType": "address",
+						"name": "targetAsset",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "reason",
+						"type": "string"
+					}
+				],
+				"name": "InvariantFailed",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
 						"name": "oldOracle",
 						"type": "address"
 					},
@@ -930,19 +949,19 @@
 			]
 		},
 		"src/ODIGGuard.sol": {
-			"keccak256": "0x68ef879e9b3db2fd8322dad3be1441829d081ff3d123e19ba13e1a438e001922",
+			"keccak256": "0x50c1ffe5ebab84b469b1dd1a750a8df50836552b64cb4e6d103afca64f67c397",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://2cedd0851c5c908a16be8f06903cae8e9508af5b6cbb2da43f551143a113d3d9",
-				"dweb:/ipfs/QmPKN9BjFBCsaS7ztgmCb3ZybMSbPEGer3vcX51gzzBaG8"
+				"bzz-raw://a71fd40f7edb0d6f312c715798fe104c27b587ea0980883d0681901636168f62",
+				"dweb:/ipfs/QmUjNVczKiLyQzuPi5J7qSLHByk2RmQaukhzvQii9HuTdn"
 			]
 		},
 		"src/interfaces/IODIGGuard.sol": {
-			"keccak256": "0xf8952f74caff6e36395bd8a1b74882c165c5b3bbe26be1682bbc6394c99b6c30",
+			"keccak256": "0xbea45a2907a4d33cc29dc32a64aa290ba935b12aa02e686262102555234237fa",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://9ffee60fa26510e507614f6fe642c0af306d20457f87743e3f38fba22bc0fde3",
-				"dweb:/ipfs/QmYuZqCsxPVqAz1c7iVph852F1nTs5t2q9vrJDZc3L1y9G"
+				"bzz-raw://309d55769c73f650a5967ab1839d29d7be8593af63641e5561d0d0ced2934848",
+				"dweb:/ipfs/QmPCtAqN8UMujhWGFwqXYDX9K5HxWmoa5mLrcWSfgN5mpV"
 			]
 		},
 		"src/interfaces/ISafeHarborRegistry.sol": {

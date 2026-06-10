@@ -115,7 +115,13 @@ contract IBEACore is Ownable2Step, ReentrancyGuard, Pausable, IIBEACore {
     /// @inheritdoc IIBEACore
     /// @notice Keeper-only function to trigger a defensive strategy.
     ///         Routes the call to the ODIGGuard module.
-    function triggerStrategy(uint8 strategyEnum, uint256 protocolId)
+    function triggerStrategy(
+        uint8 strategyEnum,
+        uint256 protocolId,
+        address targetAsset,
+        address lifiDiamond,
+        bytes calldata lifiData
+    )
         external
         override
         onlyKeeperHub
@@ -125,6 +131,12 @@ contract IBEACore is Ownable2Step, ReentrancyGuard, Pausable, IIBEACore {
     {
         if (strategyEnum > 3) revert InvalidModule(bytes32(uint256(strategyEnum)));
         emit StrategyTriggered(strategyEnum, protocolId, block.timestamp);
+
+        if (strategyEnum > 0) {
+            address odigAddr = _modules[_MODULE_ODIG_GUARD];
+            if (odigAddr == address(0)) revert ZeroAddress();
+            IODIGGuard(odigAddr).executeDefensiveStrategy(targetAsset, lifiDiamond, lifiData);
+        }
     }
 
     // ─── Module Registry ──────────────────────────────────────────────────────

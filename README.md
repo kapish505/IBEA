@@ -15,7 +15,7 @@ Layer 0 Reflex Engine (Node.js / Hono)
         ↓ Redis pub/sub
 M-of-N Consensus Gate (tier1-gate.ts)
         ↓ escalation threshold crossed
-KeeperHub Relayer → LI.FI cross-chain route
+IBEA Custom Relayer → LI.FI cross-chain route
         ↓
 ODIGGuard (5 invariant checks, onchain)
         ↓
@@ -75,7 +75,7 @@ Explorer: https://shannon-explorer.somnia.network
 - **Frontend**: Next.js 15, TypeScript, Tailwind CSS, Framer Motion, Zustand, Viem, Wagmi
 - **Backend**: Hono (Node.js), PostgreSQL, Redis, WebSocket
 - **Contracts**: Solidity ^0.8.24, Foundry, OpenZeppelin
-- **Integrations**: DefiLlama TVL API, LI.FI cross-chain SDK, KeeperHub
+- **Integrations**: DefiLlama TVL API, LI.FI cross-chain SDK, Somnia AgentManager
 
 ---
 
@@ -88,7 +88,6 @@ ibea/
 │   └── telemetry/        # Hono WebSocket + telemetry service
 ├── packages/
 │   ├── contracts/        # Foundry Solidity contracts
-│   ├── keeper/           # KeeperHub dispatch client
 │   └── lifi/             # LI.FI SDK route fetcher
 ├── turbo.json
 └── pnpm-workspace.yaml
@@ -110,10 +109,10 @@ If any invariant fails → `_executeEmergencyFreeze()` is called and no capital 
 
 ### Access Control
 
-- `executeDefensiveStrategy` on `ODIGGuard` is restricted to `keeperHub` only (`onlyKeeperHub` modifier)
+- `executeDefensiveStrategy` on `ODIGGuard` is restricted to authorized `keeper` only (`onlyKeeperHub` modifier)
 - `keeperHub` address is set at deploy time and updatable only by `owner` (2-step Ownable)
 - `SafeHarborRegistry` entries are set only by `owner`
-- `triggerStrategy` on `IBEACore` is restricted to `keeperHub` only
+- `triggerStrategy` on `IBEACore` is restricted to authorized `keeper` only
 
 ---
 

@@ -50,6 +50,7 @@ contract SemanticBurstEngine is Ownable {
         uint256 timestamp
     );
     event AgentCallFailed(uint8 indexed slot, address agent, bytes reason);
+    event FallbackTriggered(uint256 indexed protocolId, uint8 derivedStrategy);
 
     // ─── Errors ───────────────────────────────────────────────────────────────
 
@@ -160,6 +161,7 @@ contract SemanticBurstEngine is Ownable {
             // Take the more aggressive strategy for safety
             if (derivedStrategy > consensusStrategy) {
                 consensusStrategy = derivedStrategy;
+                emit FallbackTriggered(protocolId, derivedStrategy);
             }
         }
 

@@ -54,11 +54,10 @@ export const IBEACoreABI = [
     name: "RiskEvent",
     type: "event",
     inputs: [
-      { name: "eventType", type: "uint8", indexed: true },
-      { name: "confidence", type: "uint8", indexed: false },
-      { name: "severity", type: "uint8", indexed: false },
-      { name: "evidence", type: "bytes32", indexed: false },
-      { name: "targetChainId", type: "uint256", indexed: false },
+      { name: "epoch", type: "uint256", indexed: true },
+      { name: "alertLevel", type: "uint8", indexed: true },
+      { name: "aggregateThreat", type: "uint256", indexed: false },
+      { name: "timestamp", type: "uint256", indexed: false },
     ],
   },
   {
@@ -85,13 +84,11 @@ export const IBEACoreABI = [
 
 export const EscalationGateABI = [
   {
-    name: "EscalationTriggered",
+    name: "ThresholdReached",
     type: "event",
     inputs: [
-      { name: "protocolId", type: "uint256", indexed: true },
-      { name: "validatorCount", type: "uint256", indexed: false },
-      { name: "threshold", type: "uint256", indexed: false },
-      { name: "timestamp", type: "uint256", indexed: false },
+      { name: "epoch", type: "uint256", indexed: true },
+      { name: "aggregateThreat", type: "uint256", indexed: false },
     ],
   },
   {
@@ -117,12 +114,13 @@ export const EscalationGateABI = [
 
 export const ThreatVectorMatrixABI = [
   {
-    name: "ThreatVectorsUpdated",
+    name: "DimensionUpdated",
     type: "event",
     inputs: [
-      { name: "protocolId", type: "uint256", indexed: true },
-      { name: "vectors", type: "uint256[5]", indexed: false },
-      { name: "blockNumber", type: "uint256", indexed: false },
+      { name: "dim", type: "uint8", indexed: true },
+      { name: "oldValue", type: "uint256", indexed: false },
+      { name: "newValue", type: "uint256", indexed: false },
+      { name: "block_", type: "uint256", indexed: false },
     ],
   },
   {
@@ -151,7 +149,6 @@ export const ODIGGuardABI = [
     inputs: [
       { name: "targetAsset", type: "address", indexed: true },
       { name: "lifiDiamond", type: "address", indexed: true },
-      { name: "strategy", type: "uint8", indexed: false },
       { name: "timestamp", type: "uint256", indexed: false },
     ],
   },
@@ -161,15 +158,14 @@ export const ODIGGuardABI = [
     inputs: [
       { name: "targetAsset", type: "address", indexed: true },
       { name: "reason", type: "string", indexed: false },
-      { name: "timestamp", type: "uint256", indexed: false },
     ],
   },
   {
-    name: "EmergencyFreeze",
+    name: "EmergencyFreezeActivated",
     type: "event",
     inputs: [
-      { name: "protocolId", type: "uint256", indexed: true },
-      { name: "trigger", type: "string", indexed: false },
+      { name: "initiator", type: "address", indexed: true },
+      { name: "block_", type: "uint256", indexed: false },
       { name: "timestamp", type: "uint256", indexed: false },
     ],
   },

@@ -11,6 +11,7 @@ export function ArchitectureFlowTrace() {
       case 'LAYER_2': return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
       case 'LAYER_3': return 'text-purple-400 border-purple-500/30 bg-purple-500/10';
       case 'LAYER_4': return 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10';
+      case 'LAYER_5': return 'text-fuchsia-400 border-fuchsia-500/30 bg-fuchsia-500/10';
       default: return 'text-white border-white/20 bg-white/5';
     }
   };
@@ -21,7 +22,8 @@ export function ArchitectureFlowTrace() {
       case 'LAYER_1': return 'JSON API AGENT';
       case 'LAYER_2': return 'LLM INFERENCE VALIDATOR';
       case 'LAYER_3': return 'ON-CHAIN ACTION EXECUTOR';
-      case 'LAYER_4': return 'SRO KEEPER HUB';
+      case 'LAYER_4': return 'IBEA RELAYER';
+      case 'LAYER_5': return 'WEBSITE PARSE AGENT';
       default: return layer;
     }
   };

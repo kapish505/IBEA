@@ -5,10 +5,12 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { WalletConnect } from '../WalletConnect';
 
 const NAV_ITEMS = [
   { href: '/monitor', label: 'Monitor' },
   { href: '/evacuation', label: 'Safe Harbors' },
+  { href: '/safe-harbor', label: 'Post-Evacuation' },
   { href: '/execution-log', label: 'Executions' },
   { href: '/about', label: 'About' },
 ];
@@ -18,7 +20,7 @@ export function TopBar() {
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 
   return (
-    <header className="absolute top-0 z-50 w-full h-16">
+    <header className="absolute top-0 z-50 w-full h-16 mix-blend-difference">
       <div className="flex h-full items-center justify-between px-6 max-w-7xl mx-auto">
         
         {/* Logo */}
@@ -74,8 +76,8 @@ export function TopBar() {
           })}
         </nav>
 
-        {/* Status */}
-        <div className="flex items-center gap-3">
+        {/* Status & Wallet */}
+        <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
             <div className="relative flex items-center justify-center w-2 h-2">
               <div className="absolute w-full h-full bg-emerald-400 rounded-full animate-ping opacity-75" />
@@ -83,6 +85,7 @@ export function TopBar() {
             </div>
             <span className="text-xs font-mono text-emerald-400 font-semibold tracking-wide uppercase">Somnia Testnet</span>
           </div>
+          <WalletConnect />
         </div>
 
       </div>

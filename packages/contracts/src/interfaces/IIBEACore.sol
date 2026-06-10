@@ -40,7 +40,7 @@ interface IIBEACore {
     // ─── Functions ────────────────────────────────────────────────────────────
 
     function computeRisk() external returns (AlertLevel level, uint256 aggregateThreat);
-    function triggerStrategy(uint8 strategyEnum, uint256 protocolId) external;
+    function triggerStrategy(uint8 strategyEnum, uint256 protocolId, address targetAsset, address lifiDiamond, bytes calldata lifiData) external;
     function setModule(bytes32 moduleId, address moduleAddr) external;
     function getModule(bytes32 moduleId) external view returns (address);
     function alertLevel() external view returns (AlertLevel);

@@ -9,6 +9,7 @@ interface IODIGGuard {
     event ExecutionAuthorized(address indexed targetAsset, address indexed lifiDiamond, uint256 timestamp);
     event EmergencyFreezeActivated(address indexed initiator, uint256 block_, uint256 timestamp);
     event EmergencyFreezeLifted(address indexed admin, uint256 timestamp);
+    event InvariantFailed(address indexed targetAsset, string reason);
     event OracleUpdated(address indexed oldOracle, address indexed newOracle);
     event SlippageToleranceUpdated(uint256 oldBps, uint256 newBps);
     event HealthThresholdUpdated(uint256 oldThreshold, uint256 newThreshold);

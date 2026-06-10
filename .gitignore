@@ -12,3 +12,8 @@ coverage/
 cache/
 out/
 broadcast/
+packages/contracts/script/
+packages/contracts/artifacts/
+packages/contracts/IBEACoreFlattened.sol
+packages/contracts/IBEACoreClean.sol
+.ponder/

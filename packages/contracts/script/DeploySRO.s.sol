@@ -9,23 +9,12 @@ contract DeploySRO is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployerAddress = vm.addr(deployerPrivateKey);
 
-        // Dummy addresses for Somnia Native Agents
-        address jsonApiAgent = deployerAddress;
-        address webParseAgent = deployerAddress;
-        address predictiveAgent = deployerAddress;
-
         vm.startBroadcast(deployerPrivateKey);
 
-        SROCoordinator sro = new SROCoordinator(deployerAddress);
-        
-        // Register agents
-        sro.setAgents(jsonApiAgent, webParseAgent, predictiveAgent);
+        SROCoordinator sro = new SROCoordinator(deployerAddress, 0x77F6dC5924652e32DBa0B4329De0a44a2C95691E);
 
         vm.stopBroadcast();
 
         console.log("SRO Coordinator deployed at:", address(sro));
-        console.log("JSON API Agent:", jsonApiAgent);
-        console.log("Web Parse Agent:", webParseAgent);
-        console.log("Predictive Agent:", predictiveAgent);
     }
 }

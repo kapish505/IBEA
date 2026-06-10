@@ -8,15 +8,15 @@ ponder.on("IBEACore:RiskEvent", async ({ event, context }) => {
       blockNumber: event.block.number,
       blockTimestamp: event.block.timestamp,
       transactionHash: event.transaction.hash,
-      protocolId: event.args.protocolId,
-      threatScore: event.args.threatScore,
-      strategyEnum: event.args.strategyEnum,
-      targetChainId: event.args.targetChainId,
+      protocolId: event.args.epoch,
+      threatScore: Number(event.args.aggregateThreat),
+      strategyEnum: event.args.alertLevel,
+      targetChainId: 0n, // Fallback
     },
   });
 });
 
-ponder.on("EscalationGate:EscalationTriggered", async ({ event, context }) => {
+ponder.on("EscalationGate:ThresholdReached", async ({ event, context }) => {
   const { db } = context;
   await db.escalationEvent.create({
     id: `${event.transaction.hash}-${event.log.logIndex}`,
@@ -24,14 +24,14 @@ ponder.on("EscalationGate:EscalationTriggered", async ({ event, context }) => {
       blockNumber: event.block.number,
       blockTimestamp: event.block.timestamp,
       transactionHash: event.transaction.hash,
-      protocolId: event.args.protocolId,
-      validatorCount: Number(event.args.validatorCount),
-      threshold: Number(event.args.threshold),
+      protocolId: event.args.epoch, // Storing epoch here as fallback
+      validatorCount: 1, 
+      threshold: Number(event.args.aggregateThreat),
     },
   });
 });
 
-ponder.on("ThreatVectorMatrix:ThreatVectorsUpdated", async ({ event, context }) => {
+ponder.on("ThreatVectorMatrix:DimensionUpdated", async ({ event, context }) => {
   const { db } = context;
   await db.threatVectorUpdate.create({
     id: `${event.transaction.hash}-${event.log.logIndex}`,
@@ -39,12 +39,12 @@ ponder.on("ThreatVectorMatrix:ThreatVectorsUpdated", async ({ event, context }) 
       blockNumber: event.block.number,
       blockTimestamp: event.block.timestamp,
       transactionHash: event.transaction.hash,
-      protocolId: event.args.protocolId,
-      liquidityStress: event.args.vectors[0],
-      bridgeInstability: event.args.vectors[1],
-      governanceRisk: event.args.vectors[2],
-      oracleManipulationRisk: event.args.vectors[3],
-      contagionProbability: event.args.vectors[4],
+      protocolId: BigInt(event.args.block_), // Fallback
+      liquidityStress: event.args.dim == 0 ? event.args.newValue : 0,
+      bridgeInstability: event.args.dim == 1 ? event.args.newValue : 0,
+      governanceRisk: event.args.dim == 2 ? event.args.newValue : 0,
+      oracleManipulationRisk: event.args.dim == 3 ? event.args.newValue : 0,
+      contagionProbability: event.args.dim == 4 ? event.args.newValue : 0,
     },
   });
 });
@@ -59,7 +59,7 @@ ponder.on("ODIGGuard:ExecutionAuthorized", async ({ event, context }) => {
       transactionHash: event.transaction.hash,
       targetAsset: event.args.targetAsset,
       lifiDiamond: event.args.lifiDiamond,
-      strategy: event.args.strategy,
+      strategy: 0, // Fallback since strategy is not in the event anymore
       status: "AUTHORIZED",
     },
   });
@@ -82,7 +82,7 @@ ponder.on("ODIGGuard:InvariantFailed", async ({ event, context }) => {
   });
 });
 
-ponder.on("ODIGGuard:EmergencyFreeze", async ({ event, context }) => {
+ponder.on("ODIGGuard:EmergencyFreezeActivated", async ({ event, context }) => {
   const { db } = context;
   await db.odigExecution.create({
     id: `${event.transaction.hash}-${event.log.logIndex}`,
@@ -94,7 +94,7 @@ ponder.on("ODIGGuard:EmergencyFreeze", async ({ event, context }) => {
       lifiDiamond: "0x",
       strategy: 0,
       status: "FROZEN",
-      reason: event.args.trigger,
+      reason: "FreezeActivated",
     },
   });
 });

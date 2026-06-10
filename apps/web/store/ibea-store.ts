@@ -60,6 +60,16 @@ export interface ArchLog {
   txHash?: string
 }
 
+export interface AgentResult {
+  taskId: string
+  workflow: string
+  result: string
+  txHash?: string
+  requestTxHash?: string
+  taskData?: string
+  timestamp: number
+}
+
 export interface EscalationEvent {
   id: string
   type: EscalationEventType
@@ -92,7 +102,7 @@ export interface KeeperAction {
   protocolId?: string
   txHash?: string
   gasUsed?: string
-  odgChecks: ODIGCheck[]
+  odigChecks: ODIGCheck[]
 }
 
 export interface LiFiRoute {
@@ -106,6 +116,7 @@ export interface LiFiRoute {
   estimatedTime: number
   bridgeProvider: string
   status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'FAILED'
+  decisionContext?: string
   steps: Array<{
     type: string
     protocol: string
@@ -115,7 +126,7 @@ export interface LiFiRoute {
 }
 
 export interface SomniaMetrics {
-  blockNumber: bigint | null
+  blockNumber: number | null
   blockTime: number | null        // ms, rolling average
   finality: number | null         // ms estimate
   validatorLatency: number | null // ms
@@ -162,16 +173,25 @@ export interface IbeaStore {
   keeperActions: KeeperAction[]
   setKeeperActions: (actions: KeeperAction[]) => void
   upsertKeeperAction: (action: KeeperAction) => void
+  clearKeeperActions: () => void
   updateODIGCheck: (actionId: string, check: ODIGCheck) => void
 
   // Arch Logs
   architectureLogs: ArchLog[]
   addArchLog: (log: ArchLog) => void
+  clearArchLogs: () => void
+
+  // Agent Results
+  agentResults: AgentResult[]
+  addAgentResult: (result: AgentResult) => void
+  upsertAgentResult: (result: AgentResult) => void
+  clearAgentResults: () => void
 
   // LiFi Routes
   lifiRoutes: LiFiRoute[]
   setLifiRoutes: (routes: LiFiRoute[]) => void
   upsertLifiRoute: (route: LiFiRoute) => void
+  clearLifiRoutes: () => void
 
   // Somnia Metrics — null until block subscription fires
   somniaMetrics: SomniaMetrics
@@ -190,6 +210,10 @@ export interface IbeaStore {
   setActiveFilters: (filters: EscalationEventType[]) => void
   semanticBurstActive: boolean
   setSemanticBurstActive: (active: boolean) => void
+
+  // Authorization
+  authorizedAssetCount: number
+  setAuthorizedAssetCount: (count: number) => void
 
   // Reset
   resetAll: () => void
@@ -254,6 +278,7 @@ export const useIBEAStore = create<IbeaStore>()(
     // Keeper Actions
     keeperActions: [],
     setKeeperActions: (actions) => set({ keeperActions: actions }),
+    clearKeeperActions: () => set({ keeperActions: [] }),
     upsertKeeperAction: (action) =>
       set((state) => {
         const existing = state.keeperActions.findIndex((a) => a.id === action.id)
@@ -268,13 +293,13 @@ export const useIBEAStore = create<IbeaStore>()(
       set((state) => ({
         keeperActions: state.keeperActions.map((action) => {
           if (action.id !== actionId) return action
-          const checkIndex = action.odgChecks.findIndex((c) => c.id === check.id)
+          const checkIndex = action.odigChecks.findIndex((c) => c.id === check.id)
           if (checkIndex >= 0) {
-            const updatedChecks = [...action.odgChecks]
+            const updatedChecks = [...action.odigChecks]
             updatedChecks[checkIndex] = check
-            return { ...action, odgChecks: updatedChecks }
+            return { ...action, odigChecks: updatedChecks }
           }
-          return { ...action, odgChecks: [...action.odgChecks, check] }
+          return { ...action, odigChecks: [...action.odigChecks, check] }
         }),
       })),
 
@@ -284,16 +309,42 @@ export const useIBEAStore = create<IbeaStore>()(
       set((state) => ({
         architectureLogs: [log, ...state.architectureLogs].slice(0, 100),
       })),
+    clearArchLogs: () => set({ architectureLogs: [] }),
+
+    // Agent Results
+    agentResults: [],
+    addAgentResult: (result) =>
+      set((state) => ({
+        agentResults: [result, ...state.agentResults].slice(0, 100),
+      })),
+    upsertAgentResult: (result) =>
+      set((state) => {
+        const existingByRequestHash = state.agentResults.findIndex((r) => r.taskId === result.requestTxHash);
+        if (existingByRequestHash >= 0) {
+          const updated = [...state.agentResults];
+          updated[existingByRequestHash] = { ...updated[existingByRequestHash], ...result, taskId: result.taskId };
+          return { agentResults: updated };
+        }
+        const existing = state.agentResults.findIndex((r) => r.taskId === result.taskId);
+        if (existing >= 0) {
+          const updated = [...state.agentResults];
+          updated[existing] = { ...updated[existing], ...result };
+          return { agentResults: updated };
+        }
+        return { agentResults: [result, ...state.agentResults].slice(0, 100) };
+      }),
+    clearAgentResults: () => set({ agentResults: [] }),
 
     // LiFi Routes
     lifiRoutes: [],
     setLifiRoutes: (routes) => set({ lifiRoutes: routes }),
+    clearLifiRoutes: () => set({ lifiRoutes: [] }),
     upsertLifiRoute: (route) =>
       set((state) => {
         const existing = state.lifiRoutes.findIndex((r) => r.id === route.id)
         if (existing >= 0) {
           const updated = [...state.lifiRoutes]
-          updated[existing] = route
+          updated[existing] = { ...updated[existing], ...route }
           return { lifiRoutes: updated }
         }
         return { lifiRoutes: [...state.lifiRoutes, route] }
@@ -320,6 +371,10 @@ export const useIBEAStore = create<IbeaStore>()(
     semanticBurstActive: false,
     setSemanticBurstActive: (active) => set({ semanticBurstActive: active }),
 
+    // Authorization
+    authorizedAssetCount: 0,
+    setAuthorizedAssetCount: (count) => set({ authorizedAssetCount: count }),
+
     // Reset
     resetAll: () =>
       set({
@@ -330,9 +385,11 @@ export const useIBEAStore = create<IbeaStore>()(
         escalations: [],
         keeperActions: [],
         lifiRoutes: [],
+        agentResults: [],
         somniaMetrics: initialSomniaMetrics,
         safeHarborDestinations: [],
         semanticBurstActive: false,
+        authorizedAssetCount: 0,
       }),
   })),
   {

@@ -17,9 +17,9 @@ export async function triggerSemanticEnrichment(): Promise<void> {
     console.log('[semantic] Escalation triggered — dispatching Website Parse Agent for semantic enrichment...');
 
     for (const url of SEMANTIC_FEEDS) {
-      await publishArchLog(`[Semantic] Escalation enrichment: dispatching ${url} to Website Parse Agent`, 'PENDING', 'LAYER_2');
+      await publishArchLog(`[Semantic] Escalation enrichment: dispatching ${url} to Website Parse Agent`, 'PENDING', 'LAYER_5');
       await submitWebsiteParseRequest(url, config.SOMNIA_CHAIN_ID);
-      await publishArchLog(`[Semantic] Dispatched to Parse Agent. Awaiting LLM pipeline callback...`, 'SUCCESS', 'LAYER_2');
+      await publishArchLog(`[Semantic] Dispatched to Parse Agent. Awaiting LLM pipeline callback...`, 'SUCCESS', 'LAYER_5');
     }
   } catch (err) {
     console.error('[semantic] Enrichment error:', err);

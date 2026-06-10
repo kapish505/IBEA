@@ -168,15 +168,16 @@ contract ODIGGuard is Ownable2Step, ReentrancyGuard, IODIGGuard {
             try oracle.getPrice(targetAsset) returns (uint256 p) {
                 currentPrice = p;
             } catch {
-                // Oracle failure is a critical invariant breach
+                emit InvariantFailed(targetAsset, "OracleFailure");
                 _executeEmergencyFreeze();
                 return;
             }
         }
 
         if (currentPrice < minimumHealthThreshold) {
+            emit InvariantFailed(targetAsset, "OraclePriceBelowThreshold");
             _executeEmergencyFreeze();
-            revert OraclePriceBelowThreshold(currentPrice, minimumHealthThreshold);
+            return;
         }
 
         // ── INVARIANT 2: TWAP Deviation Check ────────────────────────────────
@@ -193,8 +194,9 @@ contract ODIGGuard is Ownable2Step, ReentrancyGuard, IODIGGuard {
             if (twapPrice > 0) {
                 uint256 deviationBps = ThreatMath.slippageBps(twapPrice, currentPrice);
                 if (deviationBps > maxTwapDeviationBps) {
+                    emit InvariantFailed(targetAsset, "TWAPDeviationExceeded");
                     _executeEmergencyFreeze();
-                    revert TWAPDeviationExceeded(currentPrice, twapPrice, deviationBps);
+                    return;
                 }
             }
         }
@@ -204,8 +206,9 @@ contract ODIGGuard is Ownable2Step, ReentrancyGuard, IODIGGuard {
             // currentPrice is WAD-scaled; peg = STABLECOIN_PEG (1e18)
             uint256 depegBps = ThreatMath.slippageBps(STABLECOIN_PEG, currentPrice);
             if (depegBps > maxStablecoinDepegBps) {
+                emit InvariantFailed(targetAsset, "StablecoinHealthViolation");
                 _executeEmergencyFreeze();
-                revert StablecoinHealthViolation(targetAsset, depegBps);
+                return;
             }
         }
 
@@ -213,23 +216,18 @@ contract ODIGGuard is Ownable2Step, ReentrancyGuard, IODIGGuard {
         {
             (uint256 destChainId, address destVault, uint256 minAmount) = _parseLifiData(lifiData);
             if (!safeHarborRegistry.isApproved(destChainId, destVault)) {
+                emit InvariantFailed(targetAsset, "SafeHarborViolation");
                 _executeEmergencyFreeze();
-                revert SafeHarborViolation(destChainId, destVault);
+                return;
             }
 
             // ── INVARIANT 5: Slippage Bounds ─────────────────────────────────
-            // Compare minAmount to currentPrice-based expected amount.
-            // If minAmount = 0, skip (PAUSE_ONLY strategy may not have amounts).
-            if (minAmount > 0 && currentPrice > 0) {
-                // We validate that the minAmount is within slippage tolerance
-                // of what we'd expect given the current price.
-                // This is a simplified check: slippage = (expectedAmount - minAmount) / expectedAmount
-                // Since we don't know the input amount here, we use minAmount vs oracle price as sanity.
-                // Production systems should pass expectedAmount explicitly; here we check via lifi.
-                // (minAmount is already the post-slippage bound set by the keeper — we accept it as-is
-                //  unless it's suspiciously low relative to the threshold.)
-                // Full implementation compares input token value vs output token value.
-                // For chain-bridge scenarios, this is handled by the LI.FI SDK's slippage param.
+            // Ensure minAmount is sane. If minAmount is exactly 0, that's only allowed for PAUSE_ONLY.
+            // But we actually execute swaps, so we must have a minAmount > 0 for actual asset movement.
+            if (minAmount == 0) {
+                emit InvariantFailed(targetAsset, "ZeroMinAmountNotAllowed");
+                _executeEmergencyFreeze();
+                return;
             }
         }
 
@@ -237,7 +235,9 @@ contract ODIGGuard is Ownable2Step, ReentrancyGuard, IODIGGuard {
         // solhint-disable-next-line avoid-low-level-calls
         (bool success,) = lifiDiamond.call(lifiData);
         if (!success) {
-            revert LiFiRouteFailed();
+            emit InvariantFailed(targetAsset, "LiFiRouteFailed");
+            _executeEmergencyFreeze();
+            return;
         }
 
         emit ExecutionAuthorized(targetAsset, lifiDiamond, block.timestamp);

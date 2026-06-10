@@ -5,9 +5,10 @@ import { TopBar } from "@/components/layout/TopBar";
 import { motion } from "framer-motion";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 
+
 // ─── Hero ────────────────────────────────────────────────────────────────────
 const HeroTitle = () => (
-  <div className="text-center">
+  <div className="text-center mix-blend-difference">
     <motion.h1 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -33,18 +34,18 @@ const SomniaAgentsDiagram = () => (
     <div className="relative z-10 w-full flex flex-col gap-6 max-w-sm">
       {/* Tier 1 */}
       <div className="flex items-center gap-4 bg-neutral-900/80 border border-white/10 p-4 rounded-xl relative overflow-hidden">
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />
-        <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 font-mono text-xs border border-blue-500/30">T1</div>
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500" />
+        <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 font-mono text-xs border border-emerald-500/30">T1</div>
         <div className="flex-1">
           <div className="text-xs font-mono text-neutral-400">JSON API Agent</div>
-          <div className="text-[10px] text-neutral-500 mt-1">Real-time Telemetry • Always Active</div>
+          <div className="text-[10px] text-neutral-500 mt-1">Triggered by Consensus • Fetches Real TVL, Bridge & Relayer Health</div>
         </div>
-        <motion.div animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity }} className="w-2 h-2 rounded-full bg-blue-500" />
+        <motion.div animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity }} className="w-2 h-2 rounded-full bg-emerald-500" />
       </div>
 
       {/* Connection */}
       <div className="flex justify-center -my-3 z-0">
-        <motion.div className="w-[1px] h-6 bg-gradient-to-b from-blue-500 to-amber-500" />
+        <motion.div className="w-[1px] h-6 bg-gradient-to-b from-emerald-500 to-amber-500" />
       </div>
 
       {/* Tier 2 */}
@@ -53,7 +54,7 @@ const SomniaAgentsDiagram = () => (
         <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 font-mono text-xs border border-amber-500/30">T2</div>
         <div className="flex-1">
           <div className="text-xs font-mono text-neutral-400">Website Parse Agent</div>
-          <div className="text-[10px] text-neutral-500 mt-1">Governance & GitHub Scraper • Wakes on T1 Alert</div>
+          <div className="text-[10px] text-neutral-500 mt-1">Governance & GitHub Scraper • Contextual Verification</div>
         </div>
         <motion.div animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, delay: 0.5, repeat: Infinity }} className="w-2 h-2 rounded-full bg-amber-500" />
       </div>
@@ -69,7 +70,7 @@ const SomniaAgentsDiagram = () => (
         <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 font-mono text-xs border border-red-500/30">T3</div>
         <div className="flex-1">
           <div className="text-xs font-mono text-neutral-400">LLM Inference Agent</div>
-          <div className="text-[10px] text-neutral-500 mt-1">Deterministic Reasoning • Bounds Execution</div>
+          <div className="text-[10px] text-neutral-500 mt-1">Deterministic Reasoning • Classifies Path (Fast/Slow)</div>
         </div>
         <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }} className="w-2 h-2 rounded-full bg-red-500" />
       </div>
@@ -84,7 +85,7 @@ const EscalationDiagram = () => (
     
     <div className="relative z-10 w-full flex items-center justify-center gap-8">
       <div className="flex flex-col gap-6">
-        {['Agent T3', 'Forta', 'DefiLlama'].map((name, i) => (
+        {['DefiLlama', 'Forta', 'Hypernative'].map((name, i) => (
           <div key={name} className="flex items-center gap-4">
             <div className="px-4 py-2 rounded-md border border-white/10 bg-black text-xs font-mono text-neutral-400 w-28 text-center shadow-lg">
               {name}
@@ -157,7 +158,7 @@ const LifiBridgeDiagram = () => (
             <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
           </div>
-          <div className="text-[10px] text-neutral-500 font-mono">KeeperHub Runtime</div>
+          <div className="text-[10px] text-neutral-500 font-mono">IBEA Relayer Runtime</div>
         </div>
         <div className="p-4 text-xs md:text-sm font-mono leading-loose overflow-x-auto">
           <span className="text-purple-400">await</span> <span className="text-blue-400">lifi</span>.<span className="text-yellow-200">executeRoute</span>({'{'}<br/>
@@ -187,21 +188,41 @@ export default function LandingPage() {
             transition={{ duration: 1, delay: 0.2 }}
             className="text-lg md:text-xl text-neutral-300 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-lg"
           >
-            Deterministic semantic security powered by Somnia's Native AI Trinity, KeeperHub orchestration, and LI.FI invariant execution.
+            Deterministic semantic security powered by Somnia's Native AI Trinity, IBEA Relayer orchestration, and LI.FI invariant execution.
           </motion.p>
 
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="flex justify-center pt-8"
+            className="flex flex-col gap-8 pt-8 w-full max-w-4xl mx-auto text-left"
           >
-            <Link 
-              href="/monitor" 
-              className="px-8 py-3.5 bg-white text-black hover:bg-neutral-200 transition-colors rounded-full font-semibold tracking-wide shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] pointer-events-auto"
-            >
-              Launch Terminal
-            </Link>
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 mb-4">
+              <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center text-center hover:bg-white/[0.05] transition-colors">
+                <div className="text-3xl font-display font-bold text-emerald-400 mb-2">~500ms</div>
+                <div className="text-sm font-medium text-white mb-1">Threat Detection</div>
+                <div className="text-xs text-neutral-500 leading-relaxed">Continuous M-of-N consensus across DefiLlama, Forta, and Hypernative.</div>
+              </div>
+              <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center text-center hover:bg-white/[0.05] transition-colors">
+                <div className="text-3xl font-display font-bold text-amber-400 mb-2">~2.5s</div>
+                <div className="text-sm font-medium text-white mb-1">Semantic Reasoning</div>
+                <div className="text-xs text-neutral-500 leading-relaxed">Somnia Agent Trinity parses real-time API state and governance context.</div>
+              </div>
+              <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center text-center hover:bg-white/[0.05] transition-colors">
+                <div className="text-3xl font-display font-bold text-purple-400 mb-2">~3.0s</div>
+                <div className="text-sm font-medium text-white mb-1">Time to Evacuation</div>
+                <div className="text-xs text-neutral-500 leading-relaxed">End-to-end execution of cross-chain bridging payload via LI.FI Relayer.</div>
+              </div>
+            </div>
+
+            <div className="flex justify-center mt-4 mb-10">
+              <Link 
+                href="/monitor" 
+                className="px-8 py-3.5 bg-white text-black hover:bg-neutral-200 transition-colors rounded-full font-semibold tracking-wide shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] pointer-events-auto"
+              >
+                Launch Terminal
+              </Link>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -221,11 +242,11 @@ export default function LandingPage() {
             <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6 text-blue-500 font-mono text-xl">01</div>
             <h2 className="text-3xl md:text-4xl font-display font-bold">The Somnia Agent Trinity</h2>
             <div className="space-y-4 text-neutral-400 text-base md:text-lg leading-relaxed">
-              <p>IBEA leverages the native capabilities of Somnia's 3 core agents to their absolute maximum extent, creating a staggered semantic defense wall:</p>
+              <p>IBEA reverses the standard model to save costs and maximize precision. Instead of running expensive AI agents 24/7, IBEA uses them as the ultimate verification layer:</p>
               <ul className="space-y-4 mt-4">
-                <li><strong className="text-white">Tier 1 (JSON API Agent):</strong> Provides low-latency telemetry anomaly detection and structured offchain intelligence. It is always active, sweeping mempools.</li>
-                <li><strong className="text-white">Tier 2 (Website Parse Agent):</strong> Gathers contextual semantic enrichment from governance forums, GitHub, and bridge status pages. Dormant until escalated by T1.</li>
-                <li><strong className="text-white">Tier 3 (LLM Inference Agent):</strong> Performs deterministic semantic reasoning to classify exploits. Outputs strictly bounded payload arguments.</li>
+                <li><strong className="text-white">Tier 1 (JSON API Agent):</strong> Woken up by the Escalation Gate consensus. It fetches real-time protocol metadata, validator status, bridge/relayer health, and liquidity topology.</li>
+                <li><strong className="text-white">Tier 2 (Website Parse Agent):</strong> Gathers contextual semantic enrichment from governance forums and GitHub to understand the full context of the threat.</li>
+                <li><strong className="text-white">Tier 3 (LLM Inference Agent):</strong> Performs deterministic semantic reasoning to classify the exploit and dynamically chooses the defense path (Fast Path / Slow Path).</li>
               </ul>
             </div>
           </div>
@@ -244,9 +265,9 @@ export default function LandingPage() {
         >
           <div className="flex-1 space-y-6">
             <div className="w-12 h-12 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center mb-6 text-emerald-400 font-mono text-xl">02</div>
-            <h2 className="text-3xl md:text-4xl font-display font-bold">Cryptoeconomic Escalation Gate</h2>
+            <h2 className="text-3xl md:text-4xl font-display font-bold">Continuous Telemetry Consensus</h2>
             <p className="text-neutral-400 text-lg leading-relaxed">
-              To prevent false positives from draining liquidity prematurely, execution requires an M-of-N threshold. Intelligence from the Tier 3 LLM Agent must reach consensus with off-chain telemetry providers (DefiLlama, Forta, Hypernative) before unlocking execution capabilities.
+              Before waking up the expensive Somnia AI Agents, IBEA relies on continuous off-chain telemetry providers (DefiLlama, Forta, Hypernative). When a threat is detected, they must reach an M-of-N consensus at the Escalation Gate. Once confirmed, the JSON API Agent is triggered to fetch live on-chain reality, bypassing false positives before liquidity is touched.
             </p>
           </div>
           <div className="flex-1 w-full">
@@ -264,9 +285,9 @@ export default function LandingPage() {
         >
           <div className="flex-1 space-y-6">
             <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-6 text-purple-400 font-mono text-xl">03</div>
-            <h2 className="text-3xl md:text-4xl font-display font-bold">KeeperHub Powered by LI.FI</h2>
+            <h2 className="text-3xl md:text-4xl font-display font-bold">IBEA Relayer Powered by LI.FI</h2>
             <p className="text-neutral-400 text-lg leading-relaxed">
-              Upon a confirmed invariant breach, the Semantic Burst Engine triggers the KeeperHub. Assets are autonomously bridged across chains via <strong className="text-white">LI.FI's advanced interoperability protocol</strong>. LI.FI guarantees optimal routing speed and liquidity aggregation, ensuring rapid capital isolation to predetermined Safe Harbors like Ethereum Mainnet.
+              Upon a confirmed invariant breach, the Semantic Burst Engine triggers the IBEA Relayer. Assets are autonomously bridged across chains via <strong className="text-white">LI.FI's advanced interoperability protocol</strong>. LI.FI guarantees optimal routing speed and liquidity aggregation, ensuring rapid capital isolation to predetermined Safe Harbors like Ethereum Mainnet.
             </p>
           </div>
           <div className="flex-1 w-full">

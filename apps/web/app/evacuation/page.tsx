@@ -56,8 +56,15 @@ export default function EvacuationPage() {
             <div className="p-6 relative z-10 space-y-3">
                <div className="flex justify-between items-center text-sm font-sans tracking-wide p-4 bg-white/[0.03] border border-white/10 rounded-xl hover:bg-white/[0.06] transition-colors shadow-inner">
                  <div className="flex flex-col">
-                   <span className="text-white font-medium">Ethereum Mainnet</span>
-                   <a href="https://etherscan.io/address/0x0000000000000000000000000000000000000000" target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:text-blue-300 hover:underline mt-1">View Vault Contract</a>
+                   <span className="text-white font-medium">Somnia Testnet (Safe Harbor)</span>
+                   <a 
+                     href={`https://shannon-explorer.somnia.network/address/${process.env.NEXT_PUBLIC_SAFE_HARBOR_ADDRESS || '0x14e2a01682f27AB60bDf5A9FF53296CC5D93625b'}`} 
+                     target="_blank" 
+                     rel="noreferrer" 
+                     className="text-xs text-blue-400 hover:text-blue-300 hover:underline mt-1"
+                   >
+                     View Vault Contract
+                   </a>
                  </div>
                  <span className="text-emerald-400 font-medium text-xs tracking-widest px-3 py-1 bg-emerald-400/10 rounded-full border border-emerald-400/20 shadow-[0_0_15px_rgba(52,211,153,0.2)]">APPROVED</span>
                </div>

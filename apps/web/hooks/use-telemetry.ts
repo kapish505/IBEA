@@ -7,8 +7,10 @@ import type {
   Protocol,
   EscalationEvent,
   KeeperAction,
+  KeeperAction,
   LiFiRoute,
   ODIGCheck,
+  AgentResult,
 } from '@/store/ibea-store'
 
 // ─── Telemetry WebSocket Message Types ───────────────────────────────────────
@@ -22,6 +24,7 @@ type TelemetryMessageType =
   | 'LIFI_ROUTE_UPDATE'
   | 'ESCALATION_STATE_CHANGE'
   | 'SOMNIA_AGENT_STATE'
+  | 'AGENT_RESULT'
   | 'ARCH_LOG'
   | 'PING'
 
@@ -68,133 +71,8 @@ export function useTelemetry() {
   const pingTimer = useRef<ReturnType<typeof setInterval> | null>(null)
   const isMounted = useRef(true)
 
-  const {
-    setConnectionStatus,
-    setThreatVectors,
-    upsertProtocol,
-    addEscalationEvent,
-    upsertKeeperAction,
-    updateODIGCheck,
-    upsertLifiRoute,
-    setEscalationState,
-    setSomniaMetrics,
-    addArchLog,
-  } = useIBEAStore()
-
-  const clearTimers = useCallback(() => {
-    if (reconnectTimer.current) {
-      clearTimeout(reconnectTimer.current)
-      reconnectTimer.current = null
-    }
-    if (pingTimer.current) {
-      clearInterval(pingTimer.current)
-      pingTimer.current = null
-    }
-  }, [])
-
-  const handleMessage = useCallback(
-    (raw: string) => {
-      let msg: TelemetryMessage
-      try {
-        msg = JSON.parse(raw) as TelemetryMessage
-      } catch {
-        console.warn('[IBEA Telemetry] Failed to parse message:', raw.slice(0, 100))
-        return
-      }
-
-      switch (msg.type) {
-        case 'THREAT_VECTORS_UPDATE': {
-          const payload = msg.payload as ThreatVectorsPayload
-          if (
-            typeof payload.liquidityStress === 'number' &&
-            typeof payload.bridgeInstability === 'number' &&
-            typeof payload.governanceRisk === 'number' &&
-            typeof payload.oracleManipulationRisk === 'number' &&
-            typeof payload.contagionProbability === 'number'
-          ) {
-            const vectors: ThreatVectors = {
-              liquidityStress: clamp(payload.liquidityStress),
-              bridgeInstability: clamp(payload.bridgeInstability),
-              governanceRisk: clamp(payload.governanceRisk),
-              oracleManipulationRisk: clamp(payload.oracleManipulationRisk),
-              contagionProbability: clamp(payload.contagionProbability),
-            }
-            setThreatVectors(vectors)
-          }
-          break
-        }
-
-        case 'PROTOCOL_UPDATE': {
-          const protocol = msg.payload as Protocol
-          if (protocol?.id && protocol?.address) {
-            upsertProtocol(protocol)
-          }
-          break
-        }
-
-        case 'ESCALATION_EVENT': {
-          const event = msg.payload as EscalationEvent
-          if (event?.id && event?.type && event?.timestamp) {
-            addEscalationEvent(event)
-          }
-          break
-        }
-
-        case 'KEEPER_ACTION_UPDATE': {
-          const action = msg.payload as KeeperAction
-          if (action?.id && action?.strategy) {
-            upsertKeeperAction(action)
-          }
-          break
-        }
-
-        case 'KEEPER_ODIG_CHECK': {
-          const { actionId, check } = msg.payload as ODIGCheckPayload
-          if (actionId && check?.id) {
-            updateODIGCheck(actionId, check)
-          }
-          break
-        }
-
-        case 'LIFI_ROUTE_UPDATE': {
-          const route = msg.payload as LiFiRoute
-          if (route?.id && route?.fromChainId) {
-            upsertLifiRoute(route)
-          }
-          break
-        }
-
-        case 'ESCALATION_STATE_CHANGE': {
-          const { state } = msg.payload as EscalationStatePayload
-          if (state) {
-            setEscalationState(state)
-          }
-          break
-        }
-
-        case 'SOMNIA_AGENT_STATE': {
-          const agentState = msg.payload as AgentStatePayload
-          if (agentState) {
-            setSomniaMetrics({ agentState })
-          }
-          break
-        }
-
-        case 'ARCH_LOG': {
-          addArchLog(msg.payload as any)
-          break
-        }
-
-        case 'PING':
-          // Server keepalive — no action needed
-          break
-
-        default:
-          // Unknown message type — silently ignore
-          break
-      }
-    },
-    [
+    const {
+      setConnectionStatus,
       setThreatVectors,
       upsertProtocol,
       addEscalationEvent,
@@ -204,8 +82,140 @@ export function useTelemetry() {
       setEscalationState,
       setSomniaMetrics,
       addArchLog,
-    ]
-  )
+      upsertAgentResult,
+    } = useIBEAStore()
+
+    const clearTimers = useCallback(() => {
+      if (reconnectTimer.current) {
+        clearTimeout(reconnectTimer.current)
+        reconnectTimer.current = null
+      }
+      if (pingTimer.current) {
+        clearInterval(pingTimer.current)
+        pingTimer.current = null
+      }
+    }, [])
+
+    const handleMessage = useCallback(
+      (raw: string) => {
+        let msg: TelemetryMessage
+        try {
+          msg = JSON.parse(raw) as TelemetryMessage
+        } catch {
+          console.warn('[IBEA Telemetry] Failed to parse message:', raw.slice(0, 100))
+          return
+        }
+
+        switch (msg.type) {
+          case 'THREAT_VECTORS_UPDATE': {
+            const payload = msg.payload as ThreatVectorsPayload
+            if (
+              typeof payload.liquidityStress === 'number' &&
+              typeof payload.bridgeInstability === 'number' &&
+              typeof payload.governanceRisk === 'number' &&
+              typeof payload.oracleManipulationRisk === 'number' &&
+              typeof payload.contagionProbability === 'number'
+            ) {
+              const vectors: ThreatVectors = {
+                liquidityStress: clamp(payload.liquidityStress),
+                bridgeInstability: clamp(payload.bridgeInstability),
+                governanceRisk: clamp(payload.governanceRisk),
+                oracleManipulationRisk: clamp(payload.oracleManipulationRisk),
+                contagionProbability: clamp(payload.contagionProbability),
+              }
+              setThreatVectors(vectors)
+            }
+            break
+          }
+
+          case 'PROTOCOL_UPDATE': {
+            const protocol = msg.payload as Protocol
+            if (protocol?.id && protocol?.address) {
+              upsertProtocol(protocol)
+            }
+            break
+          }
+
+          case 'ESCALATION_EVENT': {
+            const event = msg.payload as EscalationEvent
+            if (event?.id && event?.type && event?.timestamp) {
+              addEscalationEvent(event)
+            }
+            break
+          }
+
+          case 'KEEPER_ACTION_UPDATE': {
+            const action = msg.payload as KeeperAction
+            if (action?.id && action?.strategy) {
+              upsertKeeperAction(action)
+            }
+            break
+          }
+
+          case 'KEEPER_ODIG_CHECK': {
+            const { actionId, check } = msg.payload as ODIGCheckPayload
+            if (actionId && check?.id) {
+              updateODIGCheck(actionId, check)
+            }
+            break
+          }
+
+          case 'LIFI_ROUTE_UPDATE': {
+            const route = msg.payload as LiFiRoute
+            if (route?.id) {
+              upsertLifiRoute(route)
+            }
+            break
+          }
+
+          case 'ESCALATION_STATE_CHANGE': {
+            const { state } = msg.payload as EscalationStatePayload
+            if (state) {
+              setEscalationState(state)
+            }
+            break
+          }
+
+          case 'SOMNIA_AGENT_STATE': {
+            const agentState = msg.payload as AgentStatePayload
+            if (agentState) {
+              setSomniaMetrics({ agentState })
+            }
+            break
+          }
+
+          case 'ARCH_LOG': {
+            addArchLog(msg.payload as any)
+            break
+          }
+
+          case 'AGENT_RESULT': {
+            upsertAgentResult(msg.payload as AgentResult)
+            break
+          }
+
+          case 'PING':
+            // Server keepalive — no action needed
+            break
+
+          default:
+            // Unknown message type — silently ignore
+            break
+        }
+      },
+      [
+        setThreatVectors,
+        upsertProtocol,
+        addEscalationEvent,
+        upsertKeeperAction,
+        updateODIGCheck,
+        upsertLifiRoute,
+        setEscalationState,
+        setSomniaMetrics,
+        addArchLog,
+        upsertAgentResult,
+      ]
+    )
 
   const connect = useCallback(() => {
     if (!isMounted.current) return

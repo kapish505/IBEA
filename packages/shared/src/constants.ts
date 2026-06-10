@@ -30,7 +30,7 @@ export const THREAT_THRESHOLDS = {
 
 // ─── M-of-N Telemetry Consensus ───────────────────────────────────────────────
 /** Minimum number of telemetry providers that must agree for escalation */
-export const MIN_PROVIDERS_FOR_ESCALATION = 2;
+export const MIN_PROVIDERS_FOR_ESCALATION = 1;
 /** Total number of telemetry providers monitored */
 export const TOTAL_TELEMETRY_PROVIDERS = 4; // Forta, Hypernative, DefiLlama, Somnia RPC
 

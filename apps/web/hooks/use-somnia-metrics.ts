@@ -58,7 +58,7 @@ export function useSomniaMetrics() {
       const validatorLatency = avgBlockTime ? avgBlockTime * 0.4 : null
 
       setSomniaMetrics({
-        blockNumber,
+        blockNumber: Number(blockNumber),
         blockTime: avgBlockTime,
         finality,
         validatorLatency,

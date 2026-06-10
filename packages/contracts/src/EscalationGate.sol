@@ -201,26 +201,19 @@ contract EscalationGate is Ownable, IEscalationGate {
         _epochLastDecay[epoch] = block.number;
     }
 
-    /// @dev Counts distinct submitters for an epoch using weight-sum heuristic.
-    ///      Since each source has weight >= 1 and we track total weight sum,
-    ///      we cannot simply divide (weights vary). We use a separate counter pattern
-    ///      by storing submission count in the upper bits of _epochWeightSum.
-    ///      For correctness, we use a dedicated mapping.
-    mapping(uint256 => uint256) private _epochSubmissionCount;
-
-    /// @dev Override submitThreat to also increment count (handled inline below).
-    ///      This function reads the count directly.
-    function _countUniqueSubmitters(uint256 epoch) internal returns (uint256) {
-        // Increment on first submission for this source (already guarded above)
-        // We lazily increment here; this is called after _submitted[epoch][msg.sender] is set
-        _epochSubmissionCount[epoch] += 1;
-        return _epochSubmissionCount[epoch];
-    }
-
     /// @dev Computes a simple aggregate score for event emission.
     function _computeEpochAggregate(uint256 epoch) internal view returns (uint256 agg) {
         uint256[5] memory dims  = _epochAggregates[epoch];
         uint256[5] memory equal = [uint256(2000), 2000, 2000, 2000, 2000];
         agg = ThreatMath.weightedAggregate(dims, equal);
     }
+
+    /// @dev Tracks number of unique submitters per epoch.
+    mapping(uint256 => uint256) private _uniqueSubmittersCount;
+
+    function _countUniqueSubmitters(uint256 epoch) internal returns (uint256) {
+        _uniqueSubmittersCount[epoch] += 1;
+        return _uniqueSubmittersCount[epoch];
+    }
+
 }

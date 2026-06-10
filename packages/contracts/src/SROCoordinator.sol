@@ -36,9 +36,17 @@ contract SROCoordinator is Ownable {
     uint256 public websiteParseAgentId; // LLM Parse Website Agent
     uint256 public llmAgentId;          // LLM Inference Agent
 
-    // Keep track of which task belongs to which workflow
     mapping(uint256 => bytes32) public taskToEvidenceHash;
     mapping(uint256 => uint256) public taskToTargetChainId;
+
+    address public keeperHub;
+
+    error NotKeeperHub();
+
+    modifier onlyKeeperHub() {
+        if (msg.sender != keeperHub) revert NotKeeperHub();
+        _;
+    }
 
     // ─── Constructor ──────────────────────────────────────────────────────────
 
@@ -65,6 +73,10 @@ contract SROCoordinator is Ownable {
 
     function setAgentManager(address _agentManager) external onlyOwner {
         agentManager = IAgentManager(_agentManager);
+    }
+
+    function setKeeperHub(address _keeperHub) external onlyOwner {
+        keeperHub = _keeperHub;
     }
 
     // ─── ADM_METRIC (Fast-Path) ──────────────────────────────────────────────
@@ -128,7 +140,7 @@ contract SROCoordinator is Ownable {
     function reportMetricResult(
         uint256 taskId,
         uint256 metricDeviation
-    ) external onlyOwner {
+    ) external onlyKeeperHub {
         if (metricDeviation > 15) {
             emit FastPathTriggered(metricDeviation);
 
@@ -147,7 +159,7 @@ contract SROCoordinator is Ownable {
     function reportSemanticResult(
         uint256 taskId,
         uint8 computedSeverity
-    ) external onlyOwner {
+    ) external onlyKeeperHub {
         bytes32 evidenceHash = taskToEvidenceHash[taskId];
         emit SlowPathConsensusRequested(evidenceHash);
 
