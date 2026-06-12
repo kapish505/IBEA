@@ -3,7 +3,35 @@ import { redisSub, redisPub } from '../ws/broadcast.js';
 import { createPublicClient, http } from 'viem';
 import { fetchLifiRoute } from '@ibea/lifi';
 import { submitKeeperExecution } from './onchain-dispatcher.js';
-// Minimal ABI to call triggerStrategy on IBEACore
+
+// Query real ODIGGuard frozen state for ODIG checks
+async function getOdigCheckStatus(keeperActionId: string): Promise<Array<{id: string, name: string, status: string}>> {
+  try {
+    const client = createPublicClient({
+      chain: { id: 50312, name: 'Somnia', nativeCurrency: { name: 'STT', symbol: 'STT', decimals: 18 }, rpcUrls: { default: { http: ['https://dream-rpc.somnia.network'] } } },
+      transport: http('https://dream-rpc.somnia.network')
+    });
+    const isFrozen = await client.readContract({
+      address: '0xbC0aED441E79b1229EB19ef78C2D984443928106' as `0x${string}`,
+      abi: [{ type: 'function', name: 'isFrozen', inputs: [], outputs: [{ type: 'bool' }], stateMutability: 'view' }],
+      functionName: 'isFrozen'
+    }) as boolean;
+    return [
+      { id: `c1-${keeperActionId}`, name: 'TWAP', status: isFrozen ? 'FAIL' : 'PASS' },
+      { id: `c2-${keeperActionId}`, name: 'STABLECOIN', status: 'PASS' },
+      { id: `c3-${keeperActionId}`, name: 'BRIDGE', status: isFrozen ? 'FAIL' : 'PASS' },
+      { id: `c4-${keeperActionId}`, name: 'GUARD_STATE', status: isFrozen ? 'FROZEN' : 'PASS' }
+    ];
+  } catch {
+    return [
+      { id: `c1-${keeperActionId}`, name: 'TWAP', status: 'UNKNOWN' },
+      { id: `c2-${keeperActionId}`, name: 'STABLECOIN', status: 'UNKNOWN' },
+      { id: `c3-${keeperActionId}`, name: 'BRIDGE', status: 'UNKNOWN' },
+      { id: `c4-${keeperActionId}`, name: 'GUARD_STATE', status: 'UNKNOWN' }
+    ];
+  }
+}
+
 const IBEA_CORE_ABI = [
   {
     type: 'function',
@@ -23,12 +51,12 @@ const IBEA_CORE_ABI = [
 let autoEscalate = true;
 
 export function isAutoEscalateEnabled() {
-  return true;
+  return autoEscalate;
 }
 
 export function setAutoEscalateEnabled(enabled: boolean) {
-  autoEscalate = true;
-  console.log(`[relayer] Auto-escalate is hardcoded to ON`);
+  autoEscalate = enabled;
+  console.log(`[relayer] Auto-escalate set to ${enabled ? 'ON' : 'OFF'}`);
 }
 
 export async function publishArchLog(message: string, status: 'PENDING' | 'SUCCESS' | 'FAIL' = 'SUCCESS', layer: 'LAYER_0' | 'LAYER_1' | 'LAYER_2' | 'LAYER_3' | 'LAYER_4' = 'LAYER_2', txHash?: string) {
@@ -119,9 +147,23 @@ export async function startRelayer(): Promise<() => void> {
             amount: '1000000000000000000',
             userAddress: config.IBEA_CORE_ADDRESS
           });
-          if (route) {
+           if (route) {
              await publishArchLog(`LI.FI cross-chain calldata generated successfully.`, 'SUCCESS', 'LAYER_4');
              
+             // Extract real data from the LI.FI quote response
+             const fromTokenSymbol = route.action?.fromToken?.symbol || 'ETH';
+             const toTokenSymbol = route.action?.toToken?.symbol || 'STT';
+             const fromAmountRaw = route.action?.fromAmount || '1000000000000000000';
+             const fromDecimals = route.action?.fromToken?.decimals || 18;
+             const toAmountRaw = route.estimate?.toAmount || fromAmountRaw;
+             const toDecimals = route.action?.toToken?.decimals || 18;
+             const fromAmountFormatted = (Number(fromAmountRaw) / Math.pow(10, fromDecimals)).toFixed(4);
+             const toAmountFormatted = (Number(toAmountRaw) / Math.pow(10, toDecimals)).toFixed(4);
+             const bridgeName = route.toolDetails?.name || route.tool || 'LI.FI Aggregator';
+             const estimatedTimeSec = route.estimate?.executionDuration || 60;
+             const fromChain = route.action?.fromChainId || targetChainId || 1;
+             const toChain = route.action?.toChainId || config.SOMNIA_CHAIN_ID;
+
              lifiRouteId = `lifi-${Date.now()}`;
              await redisPub.publish(
                'ibea:events',
@@ -129,18 +171,18 @@ export async function startRelayer(): Promise<() => void> {
                  type: 'LIFI_ROUTE_UPDATE',
                  payload: {
                    id: lifiRouteId,
-                   fromChainId: targetChainId || 11155111,
-                   toChainId: config.SOMNIA_CHAIN_ID,
-                   fromToken: 'ETH',
-                   toToken: 'STC',
-                   fromAmount: '1.00',
-                   toAmount: route.estimate?.toAmount ? (Number(route.estimate.toAmount) / 1e18).toFixed(4) : '1.00',
-                   estimatedTime: route.estimate?.executionDuration || 60,
-                   bridgeProvider: route.toolDetails?.name || route.tool || 'LI.FI Aggregator',
-                   bridgeName: route.toolDetails?.name || route.tool || 'LI.FI Aggregator',
+                   fromChainId: fromChain,
+                   toChainId: toChain,
+                   fromToken: fromTokenSymbol,
+                   toToken: toTokenSymbol,
+                   fromAmount: fromAmountFormatted,
+                   toAmount: toAmountFormatted,
+                   estimatedTime: estimatedTimeSec,
+                   bridgeProvider: bridgeName,
+                   bridgeName: bridgeName,
                    status: 'ACTIVE',
                    steps: [],
-                   decisionContext: `AI Semantic Engine classified threat as critical. Evacuating 1.00 ETH from vulnerable AAVE smart contracts (Chain ${targetChainId || 11155111}) to highly secure Somnia L1 IBEA Vault via ${route.toolDetails?.name || route.tool || 'LI.FI Protocol'} to isolate capital.`
+                   decisionContext: `Threat detected at ${new Date().toISOString()}. IBEA routing emergency evacuation: ${fromAmountFormatted} ${fromTokenSymbol} from Chain ${fromChain} → Chain ${toChain} via ${bridgeName}. Estimated time: ${estimatedTimeSec}s. Strategy: ${strategyEnum === 2 ? 'SAFE_HARBOR_ESCAPE' : 'PAUSE_ONLY'}.`
                  },
                  ts: Date.now()
                })
@@ -182,12 +224,7 @@ export async function startRelayer(): Promise<() => void> {
               status: 'ODIG_VALIDATING',
               txHash: executedTxHash,
               protocolId: protocolId || 'ibea-core',
-              odigChecks: [
-                { id: `c1-${keeperActionId}`, name: 'TWAP', status: 'PASS' },
-                { id: `c2-${keeperActionId}`, name: 'STABLECOIN', status: 'PASS' },
-                { id: `c3-${keeperActionId}`, name: 'BRIDGE', status: 'PASS' },
-                { id: `c4-${keeperActionId}`, name: 'EXECUTE', status: 'PASS' }
-              ]
+              odigChecks: await getOdigCheckStatus(keeperActionId)
             },
             ts: Date.now()
           })
@@ -213,12 +250,7 @@ export async function startRelayer(): Promise<() => void> {
                   status: 'EXECUTED',
                   txHash: executedTxHash,
                   protocolId: protocolId || 'ibea-core',
-                  odigChecks: [
-                    { id: `c1-${keeperActionId}`, name: 'TWAP', status: 'PASS' },
-                    { id: `c2-${keeperActionId}`, name: 'STABLECOIN', status: 'PASS' },
-                    { id: `c3-${keeperActionId}`, name: 'BRIDGE', status: 'PASS' },
-                    { id: `c4-${keeperActionId}`, name: 'EXECUTE', status: 'PASS' }
-                  ]
+                  odigChecks: await getOdigCheckStatus(keeperActionId)
                 },
                 ts: Date.now()
               })

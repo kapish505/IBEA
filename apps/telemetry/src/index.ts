@@ -162,10 +162,10 @@ app.post('/api/inject', async (c) => {
   }
   
   if (body.type === 'governance') {
-    // Slow-Path Warning
-    const { injectFortaAlert } = await import('./telemetry/forta.js');
-    await injectFortaAlert();
-    return c.json({ status: 'injected', type: 'governance', message: 'Slow-path warning injected via native agent' });
+    // Slow-Path: Small TVL deviation -> goes through real DefiLlama validation -> slow-path agents
+    const { injectDefillamaCrash } = await import('./telemetry/defillama.js');
+    injectDefillamaCrash('aave', body.deviation || 10); // Small deviation triggers slow-path
+    return c.json({ status: 'injected', type: 'governance', message: 'Slow-path threat injected via DefiLlama (10% deviation)' });
   }
 
   return c.json({ error: 'Unknown threat type' }, 400);

@@ -10,8 +10,10 @@ export function ActionExecutorPanel() {
       case 'EXECUTED': return 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10';
       case 'EXECUTING': return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
       case 'ACTIVE': return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
+      case 'ODIG_VALIDATING': return 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10';
       case 'QUEUED': return 'text-neutral-400 border-neutral-700 bg-neutral-900/50';
       case 'PENDING': return 'text-neutral-400 border-neutral-700 bg-neutral-900/50';
+      case 'DEFLECTED': return 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10';
       case 'FAILED': return 'text-red-400 border-red-500/30 bg-red-500/10';
       default: return 'text-white border-white/20 bg-white/5';
     }
@@ -21,6 +23,11 @@ export function ActionExecutorPanel() {
     if (id === 1) return 'Ethereum';
     if (id === 8453) return 'Base';
     if (id === 5003) return 'Mantle';
+    if (id === 50311 || id === 50312) return 'Somnia';
+    if (id === 42161) return 'Arbitrum';
+    if (id === 137) return 'Polygon';
+    if (id === 10) return 'Optimism';
+    if (id === 11155111) return 'Sepolia';
     return `Chain ${id}`;
   };
 

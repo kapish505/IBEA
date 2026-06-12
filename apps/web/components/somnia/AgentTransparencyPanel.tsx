@@ -1,5 +1,94 @@
 import { useIBEAStore, AgentResult } from "@/store/ibea-store";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+
+function AgentDetailModal({ result, onClose }: { result: AgentResult; onClose: () => void }) {
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-[#0f0f13] border border-white/10 rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="p-4 border-b border-white/10 bg-white/[0.02] flex justify-between items-center shrink-0">
+          <div className="min-w-0 pr-4">
+            <h3 className="font-mono text-sm tracking-widest uppercase text-blue-400 font-bold">
+              Native Agent Raw Log
+            </h3>
+            <p className="text-[10px] text-white/40 font-mono mt-1 truncate">
+              Task ID: {result.taskId}
+            </p>
+          </div>
+          <button 
+            onClick={onClose}
+            className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+        
+        {/* Body — scrollable */}
+        <div className="flex-1 overflow-y-auto p-4 bg-[#0a0a0a] custom-scrollbar min-h-0">
+          <div className="mb-4 flex flex-wrap gap-2">
+            {result.requestTxHash && (
+              <a 
+                href={`https://shannon-explorer.somnia.network/tx/${result.requestTxHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 hover:text-purple-300 transition-colors text-xs font-mono"
+              >
+                View Invoking Tx ↗
+              </a>
+            )}
+            {result.txHash && (
+              <a 
+                href={`https://shannon-explorer.somnia.network/tx/${result.txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 transition-colors text-xs font-mono"
+              >
+                View Completion Tx ↗
+              </a>
+            )}
+          </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <span className="text-xs text-white/50 uppercase tracking-widest font-bold">Input Prompt</span>
+              <pre className="font-mono text-xs text-white/80 whitespace-pre-wrap break-words leading-relaxed bg-white/5 p-3 rounded border border-white/10 selection:bg-white/20 max-h-[30vh] overflow-y-auto custom-scrollbar">
+                {result.taskData || "N/A"}
+              </pre>
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              <span className="text-xs text-green-500/70 uppercase tracking-widest font-bold">Agent Output</span>
+              <pre className="font-mono text-xs text-green-400 whitespace-pre-wrap break-words leading-relaxed bg-green-500/5 p-3 rounded border border-green-500/20 selection:bg-green-500/30 selection:text-green-200 max-h-[30vh] overflow-y-auto custom-scrollbar">
+                {result.result}
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-3 bg-blue-500/5 border-t border-blue-500/20 text-center shrink-0">
+          <p className="text-[10px] text-blue-400/70 uppercase tracking-[0.3em] font-medium flex items-center justify-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+            Verified On-Chain via Somnia AgentManager
+          </p>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
 
 export function AgentTransparencyPanel() {
   const agentResults = useIBEAStore(s => s.agentResults);
@@ -81,7 +170,7 @@ export function AgentTransparencyPanel() {
             <div className="flex flex-col gap-1 w-full relative z-10 mt-1">
               <span className="text-[9px] text-green-400/60 uppercase tracking-wider">Agent Output</span>
               <div className="text-[10px] text-green-400/80 font-mono bg-black/40 p-2 rounded border border-green-500/20 whitespace-pre-wrap break-words leading-relaxed min-h-[40px] max-h-[80px] overflow-y-auto custom-scrollbar">
-                {res.result ? res.result.replace(/\n/g, ' ') : "Awaiting Output..."}
+                {res.result ? res.result.replace(/\\n/g, ' ') : "Awaiting Output..."}
               </div>
             </div>
             
@@ -94,82 +183,7 @@ export function AgentTransparencyPanel() {
       </div>
 
       {selectedResult && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => setSelectedResult(null)}
-        >
-          <div 
-            className="bg-[#0f0f13] border border-white/10 rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="p-4 border-b border-white/10 bg-white/[0.02] flex justify-between items-center shrink-0 relative z-10">
-              <div className="min-w-0 pr-4">
-                <h3 className="font-mono text-sm tracking-widest uppercase text-blue-400 font-bold">
-                  Native Agent Raw Log
-                </h3>
-                <p className="text-[10px] text-white/40 font-mono mt-1 truncate">
-                  Task ID: {selectedResult.taskId}
-                </p>
-              </div>
-              <button 
-                onClick={() => setSelectedResult(null)}
-                className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors"
-              >
-                ✕
-              </button>
-            </div>
-            
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto p-4 bg-[#0a0a0a] relative z-10 custom-scrollbar">
-              <div className="mb-4 flex flex-wrap gap-2">
-                {selectedResult.requestTxHash && (
-                  <a 
-                    href={`https://shannon-explorer.somnia.network/tx/${selectedResult.requestTxHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 hover:text-purple-300 transition-colors text-xs font-mono"
-                  >
-                    View Invoking Tx ↗
-                  </a>
-                )}
-                {selectedResult.txHash && (
-                  <a 
-                    href={`https://shannon-explorer.somnia.network/tx/${selectedResult.txHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 transition-colors text-xs font-mono"
-                  >
-                    View Completion Tx ↗
-                  </a>
-                )}
-              </div>
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <span className="text-xs text-white/50 uppercase tracking-widest font-bold">Input Prompt</span>
-                  <pre className="font-mono text-xs text-white/80 whitespace-pre-wrap break-words leading-relaxed bg-white/5 p-3 rounded border border-white/10 selection:bg-white/20">
-                    {selectedResult.taskData || "N/A"}
-                  </pre>
-                </div>
-                
-                <div className="flex flex-col gap-2">
-                  <span className="text-xs text-green-500/70 uppercase tracking-widest font-bold">Agent Output</span>
-                  <pre className="font-mono text-xs text-green-400 whitespace-pre-wrap break-words leading-relaxed bg-green-500/5 p-3 rounded border border-green-500/20 selection:bg-green-500/30 selection:text-green-200">
-                    {selectedResult.result}
-                  </pre>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="p-3 bg-blue-500/5 border-t border-blue-500/20 text-center shrink-0 relative z-10">
-              <p className="text-[10px] text-blue-400/70 uppercase tracking-[0.3em] font-medium flex items-center justify-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                Verified On-Chain via Somnia AgentManager
-              </p>
-            </div>
-          </div>
-        </div>
+        <AgentDetailModal result={selectedResult} onClose={() => setSelectedResult(null)} />
       )}
     </div>
   );

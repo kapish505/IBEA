@@ -70,7 +70,7 @@ export function SettingsMenu() {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-rose-400">{injectingFast ? 'Injecting...' : 'Inject Fast-Path Drain (99%)'}</div>
-                  <div className="text-xs text-neutral-500">Bypasses Telemetry & Triggers JSON API (Tier 1)</div>
+                  <div className="text-xs text-neutral-500">Simulates 99% TVL crash. JSON API validates via echo endpoint.</div>
                 </div>
               </button>
               
@@ -89,7 +89,7 @@ export function SettingsMenu() {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-orange-400">{injectingSlow ? 'Injecting...' : 'Inject Slow-Path Drain (10%)'}</div>
-                  <div className="text-xs text-neutral-500">Bypasses Telemetry & Triggers Consensus</div>
+                  <div className="text-xs text-neutral-500">Simulates 10% TVL dip. Agent data is fetched from live sources.</div>
                 </div>
               </button>
               
@@ -107,8 +107,8 @@ export function SettingsMenu() {
                   <Terminal className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-purple-400">{injectingGov ? 'Injecting...' : 'Inject Governance Alert'}</div>
-                  <div className="text-xs text-neutral-500">Triggers Slow-Path Agents</div>
+                  <div className="text-sm font-medium text-purple-400">{injectingGov ? 'Injecting...' : 'Inject Slow-Path Governance'}</div>
+                  <div className="text-xs text-neutral-500">Injects 10% TVL dip via DefiLlama. JSON API verifies → LLM agents analyze → slow execution.</div>
                 </div>
               </button>
             </motion.div>

@@ -91,8 +91,8 @@ export async function pollDefillama(protocolName: string): Promise<void> {
           protocol: protocolName,
           currentTvl,
           deviationPct: parseFloat(formattedDev),
-          validationUrl: injectedCrashDev !== null ? `https://httpbin.org/get?deviation=${injectedCrashDev}` : apiUrl,
-          selector: injectedCrashDev !== null ? "$.args.deviation" : "$.tvl[0].totalLiquidityUSD"
+          validationUrl: (injectedCrashDev !== null) ? `https://httpbin.org/get?deviation=${injectedCrashDev}` : apiUrl,
+          selector: (injectedCrashDev !== null) ? "$.args.deviation" : "$.tvl[0].totalLiquidityUSD"
         },
         ts: Date.now(),
       }));

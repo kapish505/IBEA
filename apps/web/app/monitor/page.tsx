@@ -19,7 +19,7 @@ export default function MonitorPage() {
 
   if (!mounted) return null;
 
-  const displayState = authorizedAssetCount === 0 ? 'STANDBY (UNAUTHORIZED)' : escalationState;
+  const displayState = escalationState || 'STANDBY';
 
   return (
     <div className="h-screen overflow-hidden bg-transparent flex flex-col font-sans text-text-primary pt-24 px-6 pb-6 max-w-[1400px] mx-auto w-full">
@@ -48,7 +48,15 @@ export default function MonitorPage() {
             <div className="p-5 border-b border-white/10 bg-white/[0.01] flex justify-between items-center relative z-10 shrink-0">
               <h2 className="text-sm tracking-[0.2em] text-neutral-400 font-medium font-sans uppercase">Global Threat Topology</h2>
               <div className="flex items-center gap-4">
-                <span className="text-xs font-mono px-3 py-1 bg-white/10 border border-white/20 rounded-full text-white backdrop-blur-md">
+                <span className={`text-xs font-mono px-3 py-1 rounded-full backdrop-blur-md transition-all duration-500 ${
+                  displayState === 'CRITICAL' || displayState === 'EXECUTING'
+                    ? 'bg-red-500/20 border border-red-500/50 text-red-400 animate-pulse'
+                    : displayState === 'ELEVATED' || displayState === 'MONITORING'
+                    ? 'bg-yellow-500/20 border border-yellow-500/40 text-yellow-400'
+                    : displayState === 'NOMINAL'
+                    ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400'
+                    : 'bg-white/10 border border-white/20 text-white'
+                }`}>
                   STATE: {displayState}
                 </span>
               </div>

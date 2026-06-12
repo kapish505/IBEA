@@ -145,22 +145,111 @@ export async function startFortaWatcher(): Promise<() => void> {
 // ─── Injection Helper ────────────────────────────────────────────────────────
 export async function injectFortaAlert(): Promise<void> {
   const { redisPub } = await import('../ws/broadcast.js');
-  await publishArchLog(
-    `[Forta] Exploit Pattern Matched: Suspicious Governance Multisig Change detected. Severity: 4000bp`,
-    'FAIL',
-    'LAYER_0'
-  );
-  await redisPub.publish('ibea:events', JSON.stringify({
-    type: 'THREAT_UPDATE',
-    payload: {
-      source: 'forta',
-      severity: 4000,
-      direction: 'WARNING',
-      alertCount: 1,
-      criticalCount: 0,
-      highCount: 0,
-      topAlert: 'Suspicious Governance Multisig Change',
-    },
-    ts: Date.now(),
-  }));
+  
+  // Actually query Forta for recent security alerts
+  try {
+    await publishArchLog(`[Forta] Scanning network for governance & security alerts...`, 'PENDING', 'LAYER_0');
+    
+    const query = `{
+      alerts(input: {
+        severity: [CRITICAL, HIGH, MEDIUM],
+        first: 10,
+        createdSince: ${Date.now() - 24 * 60 * 60 * 1000}
+      }) {
+        alerts {
+          alertId
+          severity
+          name
+          description
+          source { bot { id } }
+          createdAt
+        }
+      }
+    }`;
+
+    const res = await fetch('https://api.forta.network/graphql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+      signal: AbortSignal.timeout(8000),
+    });
+
+    let alertName = 'No recent alerts found';
+    let alertSeverity = 4000;
+    let alertCount = 0;
+    let criticalCount = 0;
+    let highCount = 0;
+
+    if (res.ok) {
+      const json = await res.json() as { data?: { alerts?: { alerts?: FortaAlert[] } } };
+      const alerts = json?.data?.alerts?.alerts ?? [];
+      alertCount = alerts.length;
+
+      if (alerts.length > 0) {
+        // Use the most severe real alert
+        const sorted = alerts.sort((a, b) => severityToScore(b.severity) - severityToScore(a.severity));
+        const top = sorted[0]!;
+        alertName = top.name || top.description?.substring(0, 80) || top.alertId;
+        alertSeverity = Math.max(severityToScore(top.severity), 4000); // Floor at 4000 for demo escalation
+        criticalCount = alerts.filter(a => a.severity === 'CRITICAL').length;
+        highCount = alerts.filter(a => a.severity === 'HIGH').length;
+        
+        await publishArchLog(
+          `[Forta] Live alert detected: "${alertName}" (${top.severity}). ${alertCount} total alerts in 24h window. Severity: ${alertSeverity}bp`,
+          'FAIL', 'LAYER_0'
+        );
+      } else {
+        // No real alerts — use the API's empty response honestly
+        alertName = 'Network quiet — no active alerts (forced escalation for demo)';
+        await publishArchLog(
+          `[Forta] 0 alerts in 24h window. Forcing escalation at ${alertSeverity}bp for demo.`,
+          'FAIL', 'LAYER_0'
+        );
+      }
+    } else {
+      // API error — report honestly
+      alertName = `Forta API returned ${res.status} — using fallback severity`;
+      await publishArchLog(
+        `[Forta] API returned ${res.status}. Forcing escalation at ${alertSeverity}bp.`,
+        'FAIL', 'LAYER_0'
+      );
+    }
+
+    await redisPub.publish('ibea:events', JSON.stringify({
+      type: 'THREAT_UPDATE',
+      payload: {
+        source: 'forta',
+        severity: alertSeverity,
+        direction: 'WARNING',
+        alertCount,
+        criticalCount,
+        highCount,
+        topAlert: alertName,
+        validationUrl: 'https://api.llama.fi/protocol/aave',
+        selector: '$.tvl[0].totalLiquidityUSD',
+      },
+      ts: Date.now(),
+    }));
+  } catch (err) {
+    // Even on total failure, still emit the escalation but report the error
+    await publishArchLog(
+      `[Forta] Query failed: ${(err as Error).message}. Forcing escalation at 4000bp.`,
+      'FAIL', 'LAYER_0'
+    );
+    await redisPub.publish('ibea:events', JSON.stringify({
+      type: 'THREAT_UPDATE',
+      payload: {
+        source: 'forta',
+        severity: 4000,
+        direction: 'WARNING',
+        alertCount: 0,
+        criticalCount: 0,
+        highCount: 0,
+        topAlert: `Forta query failed: ${(err as Error).message}`,
+        validationUrl: 'https://api.llama.fi/protocol/aave',
+        selector: '$.tvl[0].totalLiquidityUSD',
+      },
+      ts: Date.now(),
+    }));
+  }
 }

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "ponder dev",
+    "dev": "node dynamic-dev.js",
     "start": "ponder start",
     "codegen": "ponder codegen"
   },

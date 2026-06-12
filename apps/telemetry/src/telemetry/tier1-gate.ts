@@ -237,6 +237,14 @@ async function triggerEscalation(tier: number, avgSeverity: number, providerName
       console.log(`[tier1-gate] ⚡ FAST-PATH Bypass Triggered! Verifying via Somnia JSON API Agent: ${primarySignal.validationUrl}`);
       
       const { redisPub } = await import('../ws/broadcast.js');
+
+      // Update Global Threat Topology state to CRITICAL
+      await redisPub.publish('ibea:events', JSON.stringify({
+        type: 'ESCALATION_STATE_CHANGE',
+        payload: { state: 'CRITICAL' },
+        ts: Date.now()
+      }));
+
       await redisPub.publish('ibea:events', JSON.stringify({
         type: 'ARCH_LOG',
         payload: {
@@ -267,10 +275,55 @@ async function triggerEscalation(tier: number, avgSeverity: number, providerName
       void submitMetricRequest(primarySignal.validationUrl, primarySignal.selector || '$.data');
     }
   } else {
-    // Asynchronously dispatch Somnia Native Agents
-    // Always trigger Semantic and Predictive Enrichment for UI Transparency and Evidence Graph
-    void triggerSemanticEnrichment();
-    void triggerPredictiveEnrichment();
+    // SLOW-PATH: JSON API validates FIRST, then semantic/predictive agents run
+    const primarySignal = triggerSignals.find(s => s.validationUrl);
+    const validationUrl = primarySignal?.validationUrl || 'https://api.llama.fi/protocol/aave';
+    const validationSelector = primarySignal?.selector || '$.tvl[0].totalLiquidityUSD';
+    
+    console.log(`[tier1-gate] 🔄 SLOW-PATH: Running JSON API validation: ${validationUrl}`);
+    
+    const { redisPub } = await import('../ws/broadcast.js');
+
+    // Update Global Threat Topology state to ELEVATED (investigating)
+    await redisPub.publish('ibea:events', JSON.stringify({
+      type: 'ESCALATION_STATE_CHANGE',
+      payload: { state: 'ELEVATED' },
+      ts: Date.now()
+    }));
+
+    await redisPub.publish('ibea:events', JSON.stringify({
+      type: 'ARCH_LOG',
+      payload: {
+        id: `arch-slowpath-jsonapi-${Date.now()}`,
+        layer: 'LAYER_1',
+        message: `🔄 SLOW-PATH: Dispatching JSON API Agent to verify on-chain metrics (${new URL(validationUrl).hostname})...`,
+        status: 'SUCCESS',
+        timestamp: Date.now()
+      },
+      ts: Date.now()
+    }));
+
+    void submitMetricRequest(validationUrl, validationSelector);
+
+    // Emit slow-path escalation event so Semantic Evidence Timeline shows it
+    const { redisPub: rPub } = await import('../ws/broadcast.js');
+    await rPub.publish('ibea:events', JSON.stringify({
+      type: 'ESCALATION_EVENT',
+      payload: {
+        id: `esc-slowpath-${Date.now()}`,
+        type: 'ESCALATION',
+        timestamp: Date.now(),
+        title: 'CONSENSUS REACHED — JSON API DISPATCHED',
+        description: `Threat detected (${(avgSeverity / 100).toFixed(1)}% severity from ${providerNames}). JSON API Agent will verify metrics and determine execution path.`,
+        severity: tier === 2 ? 'HIGH' : 'MEDIUM',
+        tier
+      },
+      ts: Date.now()
+    }));
+
+    // NOTE: Website Parse + LLM agents are NOT dispatched here.
+    // JSON API completion handler (somnia-subscriber.ts ADM_METRIC) will
+    // check the deviation and decide: fast-path → direct execute, slow-path → dispatch Website Parse → LLM.
   }
 }
 
